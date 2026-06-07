@@ -194,17 +194,17 @@ When an agent modifies code, the changes must be limited to the scope of the cur
 
 ## Skills
 
-Skills are the project's authoritative coding standards. They live in `.claude/skills/` and must be read before writing any code in the relevant area.
+Skills are the project's authoritative coding standards. They live in `.claude/skills/<skill-name>/SKILL.md` and must be read before writing any code in the relevant area.
 
 | Skill file | Scope | Read before |
 |---|---|---|
-| `java-coding-standards.md` | All Java source in `todo-api/` | Writing any Java code |
-| `angular-coding-standards.md` | All Angular source in `todo-ui/` | Writing any TypeScript, HTML, SCSS |
-| `api-design.md` | REST endpoints, request/response contracts | Adding or changing any API endpoint |
-| `logging-and-error-handling.md` | Exception handling, SLF4J logging, Angular error handling | Writing error handling, try/catch, logging, or HTTP error interceptors |
-| `testing-standards.md` | JUnit 5, Mockito, @WebMvcTest, Jasmine, Karma | Writing any test code (backend or frontend) |
-| `maven-build.md` | All pom.xml files, build lifecycle, frontend-maven-plugin | Touching any pom.xml or build configuration |
-| `git-workflow.md` | Branch naming, commit messages, Git hygiene | Creating branches, writing commit messages |
+| `.claude/skills/java-coding-standards/SKILL.md` | All Java source in `todo-api/` | Writing any Java code |
+| `.claude/skills/angular-coding-standards/SKILL.md` | All Angular source in `todo-ui/` | Writing any TypeScript, HTML, SCSS |
+| `.claude/skills/api-design/SKILL.md` | REST endpoints, request/response contracts | Adding or changing any API endpoint |
+| `.claude/skills/logging-and-error-handling/SKILL.md` | Exception handling, SLF4J logging, Angular error handling | Writing error handling, try/catch, logging, or HTTP error interceptors |
+| `.claude/skills/testing-standards/SKILL.md` | JUnit 5, Mockito, @WebMvcTest, Jasmine, Karma | Writing any test code (backend or frontend) |
+| `.claude/skills/maven-build/SKILL.md` | All pom.xml files, build lifecycle, frontend-maven-plugin | Touching any pom.xml or build configuration |
+| `.claude/skills/git-workflow/SKILL.md` | Branch naming, commit messages, Git hygiene | Creating branches, writing commit messages |
 
 ### Skill compliance review
 
@@ -220,7 +220,7 @@ For every code change, identify which skills apply and verify compliance before 
 
 ### General
 
-- Read the applicable skills from `.claude/skills/` BEFORE writing code, not as a post-hoc check.
+- Read the applicable skills from `.claude/skills/<skill-name>/SKILL.md` BEFORE writing code, not as a post-hoc check.
 - Test-first is enforced in Step 4. Do not ship code-only changes without corresponding test coverage unless the user explicitly waives it.
 - Keep code as simple as possible while meeting requirements; prefer straightforward designs over clever or deeply nested implementations.
 - Add comments wherever the code is complex, non-obvious, or the logic is not self-explanatory.

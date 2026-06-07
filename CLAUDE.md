@@ -16,6 +16,11 @@ Read and follow AGENT.md for all agent behaviour, workflow, and coding standards
 
 A full-stack TODO application built with spec-driven development using Spec Kit.
 
+## Skill loading
+
+- Custom project skills are defined in `.claude/skills/<skill-name>/SKILL.md`.
+- Spec Kit workflows must apply both built-in `speckit-*` skills and these custom coding-standard skills when generating plans, tasks, and implementation changes.
+
 ## Tech stack
 
 - **Frontend:** Angular 22 (standalone components, signals, zoneless)
