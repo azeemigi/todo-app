@@ -1,0 +1,27 @@
+cat > .gitignore << 'GIEOF'
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# Angular / Node
+todo-ui/node_modules/
+todo-ui/dist/
+todo-ui/.angular/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spec Kit working files
+.specify/cache/
