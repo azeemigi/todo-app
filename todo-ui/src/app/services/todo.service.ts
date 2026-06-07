@@ -32,6 +32,7 @@ export class TodoService {
   }
 
   createTodo(dto: CreateTodoDto): void {
+    this.errorSignal.set(null);
     this.http.post<Todo>(this.API, dto).subscribe({
       next: todo => this.todosSignal.update(list => [todo, ...list]),
       error: () => this.errorSignal.set('Failed to create TODO.')
@@ -39,25 +40,27 @@ export class TodoService {
   }
 
   updateTodo(id: string, dto: UpdateTodoDto): void {
+    this.errorSignal.set(null);
     this.http.put<Todo>(`${this.API}/${id}`, dto).subscribe({
-      next: updated => this.todosSignal.update(list =>
-        list.map(t => t.id === id ? updated : t)
-      )
+      next: updated => this.todosSignal.update(list => list.map(t => t.id === id ? updated : t)),
+      error: () => this.errorSignal.set('Failed to update TODO.')
     });
   }
 
   patchTodo(id: string, completed: boolean): void {
+    this.errorSignal.set(null);
     const patch: PatchTodoDto = { completed };
     this.http.patch<Todo>(`${this.API}/${id}`, patch).subscribe({
-      next: updated => this.todosSignal.update(list =>
-        list.map(t => t.id === id ? updated : t)
-      )
+      next: updated => this.todosSignal.update(list => list.map(t => t.id === id ? updated : t)),
+      error: () => this.errorSignal.set('Failed to update TODO status.')
     });
   }
 
   deleteTodo(id: string): void {
+    this.errorSignal.set(null);
     this.http.delete(`${this.API}/${id}`).subscribe({
-      next: () => this.todosSignal.update(list => list.filter(t => t.id !== id))
+      next: () => this.todosSignal.update(list => list.filter(t => t.id !== id)),
+      error: () => this.errorSignal.set('Failed to delete TODO.')
     });
   }
 }

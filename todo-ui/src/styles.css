@@ -44,7 +44,7 @@ button {
   font-size: inherit;
 }
 
-input, textarea {
+input[type="text"], textarea {
   font-family: inherit;
   font-size: inherit;
   width: 100%;

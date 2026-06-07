@@ -33,7 +33,6 @@ import { TodoItemComponent } from '../todo-item/todo-item.component';
     .error-message { padding: 1rem; background: #fee; border: 1px solid #fcc; border-radius: 4px; }
     .error-message button { margin-top: 0.5rem; }
     .empty-state { text-align: center; padding: 3rem; color: #888; }
-    .todo-list { display: flex; flex-direction: column; gap: 0.75rem; }
   `]
 })
 export class TodoListComponent {

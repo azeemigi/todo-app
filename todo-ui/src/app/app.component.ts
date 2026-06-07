@@ -17,7 +17,6 @@ import { TodoService } from './services/todo.service';
     </main>
   `,
   styles: [`
-    .app-container { max-width: 800px; margin: 0 auto; padding: 1rem; }
     header { margin-bottom: 1.5rem; }
     h1 { margin: 0; font-size: 1.75rem; }
   `]

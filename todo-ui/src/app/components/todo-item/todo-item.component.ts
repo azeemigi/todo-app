@@ -12,6 +12,7 @@ import { TodoEditComponent } from '../todo-edit/todo-edit.component';
       <div class="todo-main">
         <input
           type="checkbox"
+          aria-label="Toggle TODO completion"
           [checked]="todo.completed"
           [disabled]="toggling()"
           (change)="onToggle($event)"
@@ -24,8 +25,8 @@ import { TodoEditComponent } from '../todo-edit/todo-edit.component';
           <p class="todo-date">{{ formattedDate }}</p>
         </div>
         <div class="todo-actions">
-          <button class="edit-btn" (click)="editing.set(!editing())">Edit</button>
-          <button class="delete-btn" (click)="confirming.set(true)">Delete</button>
+          <button type="button" class="edit-btn" (click)="editing.set(!editing())">Edit</button>
+          <button type="button" class="delete-btn" (click)="confirming.set(true)">Delete</button>
         </div>
       </div>
 
@@ -40,8 +41,8 @@ import { TodoEditComponent } from '../todo-edit/todo-edit.component';
       @if (confirming()) {
         <div class="confirm-delete">
           <span>Delete this TODO?</span>
-          <button class="confirm-delete-btn" (click)="onDelete()">Confirm</button>
-          <button class="cancel-delete-btn" (click)="confirming.set(false)">Cancel</button>
+          <button type="button" class="confirm-delete-btn" (click)="onDelete()">Confirm</button>
+          <button type="button" class="cancel-delete-btn" (click)="confirming.set(false)">Cancel</button>
         </div>
       }
 

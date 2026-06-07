@@ -23,12 +23,7 @@
             "browser": "src/main.ts",
             "polyfills": [],
             "tsConfig": "tsconfig.app.json",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
+            "assets": [],
             "styles": ["src/styles.css"],
             "scripts": []
           },
@@ -68,12 +63,7 @@
           "options": {
             "polyfills": [],
             "tsConfig": "tsconfig.spec.json",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
+            "assets": [],
             "styles": ["src/styles.css"],
             "scripts": [],
             "browsers": "Chrome"
