@@ -1,4 +1,3 @@
-cat > .gitignore << 'GIEOF'
 # Java / Maven
 target/
 *.class
@@ -10,6 +9,7 @@ target/
 todo-ui/node_modules/
 todo-ui/dist/
 todo-ui/.angular/
+todo-ui/.node/
 
 # IDE
 .idea/
@@ -22,6 +22,10 @@ todo-ui/.angular/
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs / env
+*.log
+.env*
 
 # Spec Kit working files
 .specify/cache/

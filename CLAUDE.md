@@ -2,6 +2,16 @@
 
 Read and follow AGENT.md for all agent behaviour, workflow, and coding standards.
 
+<!-- SPECKIT START -->
+## Active Feature
+
+**Branch**: `001-todo-rest-spa`
+**Plan**: [specs/001-todo-rest-spa/plan.md](specs/001-todo-rest-spa/plan.md)
+**Spec**: [specs/001-todo-rest-spa/spec.md](specs/001-todo-rest-spa/spec.md)
+**Data Model**: [specs/001-todo-rest-spa/data-model.md](specs/001-todo-rest-spa/data-model.md)
+**API Contract**: [specs/001-todo-rest-spa/contracts/todos-api.md](specs/001-todo-rest-spa/contracts/todos-api.md)
+<!-- SPECKIT END -->
+
 ## Project overview
 
 A full-stack TODO application built with spec-driven development using Spec Kit.
