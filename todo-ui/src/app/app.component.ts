@@ -1,7 +1,6 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { TodoListComponent } from './components/todo-list/todo-list.component';
 import { TodoFormComponent } from './components/todo-form/todo-form.component';
-import { TodoService } from './services/todo.service';
 
 @Component({
   selector: 'app-root',
@@ -21,9 +20,4 @@ import { TodoService } from './services/todo.service';
     h1 { margin: 0; font-size: 1.75rem; }
   `]
 })
-export class AppComponent {
-  constructor() {
-    const todoService = inject(TodoService);
-    effect(() => todoService.loadTodos());
-  }
-}
+export class AppComponent {}

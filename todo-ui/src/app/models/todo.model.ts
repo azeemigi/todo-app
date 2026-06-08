@@ -30,3 +30,10 @@ export interface FieldError {
 export interface ApiError {
   errors: FieldError[];
 }
+
+export interface TodoFilter {
+  status?: string;
+  q?: string;
+  sortBy?: string;
+  sortDir?: string;
+}

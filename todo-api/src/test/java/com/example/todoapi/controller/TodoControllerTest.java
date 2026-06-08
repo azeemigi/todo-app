@@ -1,6 +1,9 @@
 package com.example.todoapi.controller;
 
+import com.example.todoapi.model.SortBy;
+import com.example.todoapi.model.SortDir;
 import com.example.todoapi.model.Todo;
+import com.example.todoapi.model.TodoStatus;
 import com.example.todoapi.service.TodoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -19,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -47,9 +51,15 @@ class TodoControllerTest {
         return todo;
     }
 
+    private Todo buildTodo(String title, boolean completed, Instant createdAt) {
+        Todo todo = buildTodo(title, createdAt);
+        todo.setCompleted(completed);
+        return todo;
+    }
+
     @Test
     void getAllTodos_returnsEmptyList() throws Exception {
-        when(todoService.findAll()).thenReturn(Collections.emptyList());
+        when(todoService.findAll(any(), any(), any(), any())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/todos"))
                 .andExpect(status().isOk())
@@ -60,12 +70,106 @@ class TodoControllerTest {
     void getAllTodos_returnsTodosNewestFirst() throws Exception {
         Todo older = buildTodo("Older", Instant.parse("2026-06-07T09:00:00Z"));
         Todo newer = buildTodo("Newer", Instant.parse("2026-06-07T10:00:00Z"));
-        when(todoService.findAll()).thenReturn(List.of(newer, older));
+        when(todoService.findAll(any(), any(), any(), any())).thenReturn(List.of(newer, older));
 
         mockMvc.perform(get("/api/todos"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Newer"))
                 .andExpect(jsonPath("$[1].title").value("Older"));
+    }
+
+    // T013: Status filter query param tests
+    @Test
+    void getAllTodos_withStatusActive_returnsActiveOnly() throws Exception {
+        Todo active = buildTodo("Active", false, Instant.parse("2026-06-07T10:00:00Z"));
+        when(todoService.findAll(eq(TodoStatus.ACTIVE), any(), any(), any())).thenReturn(List.of(active));
+
+        mockMvc.perform(get("/api/todos?status=active"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].completed").value(false));
+    }
+
+    @Test
+    void getAllTodos_withStatusCompleted_returnsCompletedOnly() throws Exception {
+        Todo completed = buildTodo("Completed", true, Instant.parse("2026-06-07T10:00:00Z"));
+        when(todoService.findAll(eq(TodoStatus.COMPLETED), any(), any(), any())).thenReturn(List.of(completed));
+
+        mockMvc.perform(get("/api/todos?status=completed"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].completed").value(true));
+    }
+
+    @Test
+    void getAllTodos_withStatusAll_returnsAll() throws Exception {
+        when(todoService.findAll(eq(TodoStatus.ALL), any(), any(), any())).thenReturn(List.of(
+                buildTodo("A", false, Instant.parse("2026-06-07T09:00:00Z")),
+                buildTodo("B", true, Instant.parse("2026-06-07T10:00:00Z"))
+        ));
+
+        mockMvc.perform(get("/api/todos?status=all"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    void getAllTodos_withInvalidStatus_returns400() throws Exception {
+        mockMvc.perform(get("/api/todos?status=banana"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("status"))
+                .andExpect(jsonPath("$.errors[0].message").value(org.hamcrest.Matchers.containsString("banana")));
+    }
+
+    @Test
+    void getAllTodos_noParams_backwardCompatible() throws Exception {
+        when(todoService.findAll(eq(TodoStatus.ALL), any(), eq(SortBy.CREATED_AT), eq(SortDir.DESC)))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/todos"))
+                .andExpect(status().isOk());
+    }
+
+    // T026: Sort query param tests
+    @Test
+    void getAllTodos_withSortByTitleAsc_returns200() throws Exception {
+        when(todoService.findAll(any(), any(), eq(SortBy.TITLE), eq(SortDir.ASC))).thenReturn(List.of(
+                buildTodo("Alpha", Instant.parse("2026-06-07T10:00:00Z")),
+                buildTodo("Zebra", Instant.parse("2026-06-07T09:00:00Z"))
+        ));
+
+        mockMvc.perform(get("/api/todos?sortBy=title&sortDir=asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Alpha"))
+                .andExpect(jsonPath("$[1].title").value("Zebra"));
+    }
+
+    @Test
+    void getAllTodos_withSortByCreatedAtAsc_returns200() throws Exception {
+        when(todoService.findAll(any(), any(), eq(SortBy.CREATED_AT), eq(SortDir.ASC))).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/todos?sortBy=createdAt&sortDir=asc"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllTodos_withInvalidSortDir_returns400() throws Exception {
+        mockMvc.perform(get("/api/todos?sortDir=sideways"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("sortDir"));
+    }
+
+    @Test
+    void getAllTodos_withInvalidSortBy_returns400() throws Exception {
+        mockMvc.perform(get("/api/todos?sortBy=priority"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("sortBy"));
+    }
+
+    @Test
+    void getAllTodos_withMultipleInvalidParams_returns400WithMultipleErrors() throws Exception {
+        mockMvc.perform(get("/api/todos?sortBy=priority&sortDir=sideways"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(2)));
     }
 
     // --- Phase 4: US2 Create TODO ---

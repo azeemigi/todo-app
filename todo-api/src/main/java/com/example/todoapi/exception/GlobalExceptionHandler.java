@@ -5,10 +5,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -19,6 +22,22 @@ public class GlobalExceptionHandler {
                 .map(fe -> new FieldError(fe.getField(), fe.getDefaultMessage()))
                 .toList();
         return ResponseEntity.badRequest().body(new ErrorResponse(errors));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String paramName = ex.getName();
+        String value = ex.getValue() != null ? ex.getValue().toString() : "null";
+        Class<?> requiredType = ex.getRequiredType();
+        String accepted = "";
+        if (requiredType != null && requiredType.isEnum()) {
+            accepted = " Accepted values: " + Arrays.stream(requiredType.getEnumConstants())
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+        }
+        String message = "Invalid value '" + value + "' for parameter '" + paramName + "'." + accepted;
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse(List.of(new FieldError(paramName, message))));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
