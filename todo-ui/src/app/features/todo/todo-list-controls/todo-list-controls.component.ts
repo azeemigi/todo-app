@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-todo-list-controls',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="list-controls">
       <div class="status-filter">
@@ -44,40 +45,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       </select>
     </div>
   `,
-  styles: [`
-    .list-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .status-filter { display: flex; gap: 0.25rem; }
-    .status-filter button {
-      padding: 0.25rem 0.75rem;
-      border: 1px solid #ccc;
-      background: white;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .status-filter button.active {
-      background: #333;
-      color: white;
-      border-color: #333;
-    }
-    input[type="text"] {
-      flex: 1;
-      min-width: 150px;
-      padding: 0.25rem 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    select {
-      padding: 0.25rem 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-  `]
+  styleUrl: './todo-list-controls.component.scss'
 })
 export class TodoListControlsComponent {
   @Input() currentStatus = 'all';

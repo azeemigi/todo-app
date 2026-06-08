@@ -1,11 +1,14 @@
-import { Component, inject, Input, signal } from '@angular/core';
-import { Todo } from '../../models/todo.model';
-import { TodoService } from '../../services/todo.service';
+import { Component, ChangeDetectionStrategy, DestroyRef, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
+import { Todo } from '../../../core/models/todo.model';
+import { TodoService } from '../../../core/services/todo.service';
 import { TodoEditComponent } from '../todo-edit/todo-edit.component';
 
 @Component({
   selector: 'app-todo-item',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TodoEditComponent],
   template: `
     <div class="todo-card" [class.completed]="todo.completed">
@@ -33,7 +36,7 @@ import { TodoEditComponent } from '../todo-edit/todo-edit.component';
       @if (editing()) {
         <app-todo-edit
           [todo]="todo"
-          (saved)="editing.set(false)"
+          (saved)="onSaved()"
           (cancelled)="editing.set(false)"
         />
       }
@@ -51,40 +54,19 @@ import { TodoEditComponent } from '../todo-edit/todo-edit.component';
       }
     </div>
   `,
-  styles: [`
-    .todo-card {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 1rem;
-      background: #fff;
-    }
-    .todo-card.completed { background: #f8f8f8; }
-    .todo-card.completed .todo-title { text-decoration: line-through; color: #888; }
-    .todo-main { display: flex; gap: 0.75rem; align-items: flex-start; }
-    .todo-content { flex: 1; }
-    .todo-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .todo-title { margin: 0 0 0.25rem; font-size: 1rem; }
-    .todo-description { color: #555; font-size: 0.9rem; margin: 0.25rem 0; }
-    .todo-date { color: #999; font-size: 0.75rem; margin: 0.5rem 0 0; }
-    .todo-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
-    .edit-btn, .delete-btn { padding: 0.25rem 0.5rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 0.8rem; background: #fff; }
-    .delete-btn { color: #c00; border-color: #fcc; }
-    .confirm-delete { margin-top: 0.75rem; padding: 0.5rem; background: #fff3f3; border-radius: 4px; display: flex; gap: 0.5rem; align-items: center; }
-    .confirm-delete-btn { background: #c00; color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
-    .cancel-delete-btn { background: #eee; border: none; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
-    .item-error { color: #c00; font-size: 0.8rem; margin: 0.5rem 0 0; }
-    input[type="checkbox"] { margin-top: 0.2rem; flex-shrink: 0; }
-  `]
+  styleUrl: './todo-item.component.scss'
 })
 export class TodoItemComponent {
   @Input({ required: true }) todo!: Todo;
+  @Output() reloaded = new EventEmitter<void>();
 
-  private svc = inject(TodoService);
+  private readonly svc = inject(TodoService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  toggling = signal(false);
-  editing = signal(false);
-  confirming = signal(false);
-  itemError = signal<string | null>(null);
+  readonly toggling = signal(false);
+  readonly editing = signal(false);
+  readonly confirming = signal(false);
+  readonly itemError = signal<string | null>(null);
 
   get formattedDate(): string {
     return new Date(this.todo.createdAt).toLocaleDateString(undefined, {
@@ -96,12 +78,27 @@ export class TodoItemComponent {
     const checked = (event.target as HTMLInputElement).checked;
     this.toggling.set(true);
     this.itemError.set(null);
-    this.svc.patchTodo(this.todo.id, checked);
-    this.toggling.set(false);
+    this.svc.patch(this.todo.id, checked).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.toggling.set(false))
+    ).subscribe({
+      next: () => this.reloaded.emit(),
+      error: () => this.itemError.set('Failed to update TODO.')
+    });
+  }
+
+  onSaved(): void {
+    this.editing.set(false);
+    this.reloaded.emit();
   }
 
   onDelete(): void {
-    this.svc.deleteTodo(this.todo.id);
     this.confirming.set(false);
+    this.svc.delete(this.todo.id).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: () => this.reloaded.emit(),
+      error: () => this.itemError.set('Failed to delete TODO.')
+    });
   }
 }

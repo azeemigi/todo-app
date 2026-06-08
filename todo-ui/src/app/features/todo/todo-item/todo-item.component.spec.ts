@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { of, throwError } from 'rxjs';
 import { TodoItemComponent } from './todo-item.component';
-import { TodoService } from '../../services/todo.service';
-import { Todo } from '../../models/todo.model';
+import { TodoService } from '../../../core/services/todo.service';
+import { Todo } from '../../../core/models/todo.model';
 
 const baseTodo: Todo = {
   id: '1',
@@ -24,9 +24,9 @@ describe('TodoItemComponent', () => {
   };
 
   beforeEach(async () => {
-    mockService = jasmine.createSpyObj('TodoService', ['patchTodo', 'deleteTodo'], {
-      error: signal<string | null>(null)
-    });
+    mockService = jasmine.createSpyObj('TodoService', ['patch', 'delete']);
+    mockService.patch.and.returnValue(of({ ...baseTodo, completed: true }));
+    mockService.delete.and.returnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [TodoItemComponent],
@@ -34,58 +34,65 @@ describe('TodoItemComponent', () => {
     }).compileComponents();
   });
 
-  it('renders title', () => {
+  it('should render the todo title', () => {
     setup(baseTodo);
     expect(fixture.nativeElement.textContent).toContain('My Todo');
   });
 
-  it('shows description when present', () => {
+  it('should show description when present', () => {
     setup(baseTodo);
     const desc = fixture.nativeElement.querySelector('.todo-description');
     expect(desc).toBeTruthy();
     expect(desc.textContent).toContain('A description');
   });
 
-  it('hides description when null', () => {
+  it('should hide description when null', () => {
     setup({ ...baseTodo, description: null });
     expect(fixture.nativeElement.querySelector('.todo-description')).toBeNull();
   });
 
-  it('shows creation date', () => {
+  it('should show the creation date', () => {
     setup(baseTodo);
     expect(fixture.nativeElement.querySelector('.todo-date')).toBeTruthy();
   });
 
-  it('applies completed CSS class when completed=true', () => {
+  it('should apply completed CSS class when completed is true', () => {
     setup({ ...baseTodo, completed: true });
     expect(fixture.nativeElement.querySelector('.todo-card.completed')).toBeTruthy();
   });
 
-  it('does not apply completed CSS class when completed=false', () => {
+  it('should not apply completed CSS class when completed is false', () => {
     setup({ ...baseTodo, completed: false });
     expect(fixture.nativeElement.querySelector('.todo-card.completed')).toBeNull();
   });
 
-  // --- Phase 5: Checkbox toggle (US3) ---
+  it('should call service patch and emit reloaded when checkbox is clicked', () => {
+    setup(baseTodo);
+    let reloaded = false;
+    fixture.componentInstance.reloaded.subscribe(() => { reloaded = true; });
+    const checkbox = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    checkbox.click();
+    expect(mockService.patch).toHaveBeenCalledWith('1', true);
+    expect(reloaded).toBeTrue();
+  });
 
-  it('clicking checkbox calls todoService.patchTodo() with toggled value', () => {
+  it('should show error message when patch fails', () => {
+    mockService.patch.and.returnValue(throwError(() => new Error('500')));
     setup(baseTodo);
     const checkbox = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
     checkbox.click();
-    expect(mockService.patchTodo).toHaveBeenCalledWith('1', true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.item-error')).toBeTruthy();
   });
 
-  // --- Phase 7: Delete (US5) ---
-
-  it('delete button shows confirmation', () => {
+  it('should show delete confirmation dialog when delete button clicked', () => {
     setup(baseTodo);
-    const deleteBtn = fixture.nativeElement.querySelector('.delete-btn') as HTMLButtonElement;
-    deleteBtn.click();
+    fixture.nativeElement.querySelector('.delete-btn').click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.confirm-delete')).toBeTruthy();
   });
 
-  it('cancel keeps card visible', () => {
+  it('should hide confirmation dialog when cancel is clicked', () => {
     setup(baseTodo);
     fixture.nativeElement.querySelector('.delete-btn').click();
     fixture.detectChanges();
@@ -94,11 +101,14 @@ describe('TodoItemComponent', () => {
     expect(fixture.nativeElement.querySelector('.confirm-delete')).toBeNull();
   });
 
-  it('confirm calls todoService.deleteTodo()', () => {
+  it('should call service delete and emit reloaded when confirm delete is clicked', () => {
     setup(baseTodo);
+    let reloaded = false;
+    fixture.componentInstance.reloaded.subscribe(() => { reloaded = true; });
     fixture.nativeElement.querySelector('.delete-btn').click();
     fixture.detectChanges();
     fixture.nativeElement.querySelector('.confirm-delete-btn').click();
-    expect(mockService.deleteTodo).toHaveBeenCalledWith('1');
+    expect(mockService.delete).toHaveBeenCalledWith('1');
+    expect(reloaded).toBeTrue();
   });
 });

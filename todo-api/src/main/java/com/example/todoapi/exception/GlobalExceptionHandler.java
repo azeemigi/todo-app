@@ -1,5 +1,7 @@
 package com.example.todoapi.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,19 +11,25 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        List<FieldError> errors = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> new FieldError(fe.getField(), fe.getDefaultMessage()))
-                .toList();
-        return ResponseEntity.badRequest().body(new ErrorResponse(errors));
+        Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        org.springframework.validation.FieldError::getField,
+                        fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "Invalid value",
+                        (first, second) -> first
+                ));
+        log.debug("Validation failed: {}", fieldErrors);
+        return ResponseEntity.badRequest().body(ErrorResponse.ofValidation(fieldErrors));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -36,25 +44,29 @@ public class GlobalExceptionHandler {
                     .collect(Collectors.joining(", "));
         }
         String message = "Invalid value '" + value + "' for parameter '" + paramName + "'." + accepted;
+        log.debug("Type mismatch for param '{}': {}", paramName, value);
         return ResponseEntity.badRequest()
-                .body(new ErrorResponse(List.of(new FieldError(paramName, message))));
+                .body(ErrorResponse.ofValidation(Map.of(paramName, message)));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NoSuchElementException ex) {
+        log.debug("Resource not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(List.of(new FieldError("id", "TODO not found"))));
+                .body(ErrorResponse.of(404, "TODO not found"));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleMissingResource(NoResourceFoundException ex) {
+        log.debug("Static resource not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(List.of(new FieldError("resource", "Resource not found"))));
+                .body(ErrorResponse.of(404, "Resource not found"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
+        log.error("Unexpected error", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(List.of(new FieldError("server", "An unexpected error occurred"))));
+                .body(ErrorResponse.of(500, "An unexpected error occurred"));
     }
 }

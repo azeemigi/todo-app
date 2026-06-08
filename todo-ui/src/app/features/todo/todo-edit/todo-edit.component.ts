@@ -1,11 +1,14 @@
-import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, EventEmitter, inject, Input, OnInit, Output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Todo } from '../../models/todo.model';
-import { TodoService } from '../../services/todo.service';
+import { finalize } from 'rxjs';
+import { Todo } from '../../../core/models/todo.model';
+import { TodoService } from '../../../core/services/todo.service';
 
 @Component({
   selector: 'app-todo-edit',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule],
   template: `
     <form [formGroup]="form" (ngSubmit)="save()" class="edit-form">
@@ -27,33 +30,30 @@ import { TodoService } from '../../services/todo.service';
           <span class="field-error">Description must be 1000 characters or fewer.</span>
         }
       </div>
+      @if (serverError()) {
+        <p class="field-error">{{ serverError() }}</p>
+      }
       <div class="edit-actions">
-        <button type="submit">Save</button>
+        <button type="submit" [disabled]="saving()">Save</button>
         <button type="button" class="cancel-edit-btn" (click)="cancel()">Cancel</button>
       </div>
     </form>
   `,
-  styles: [`
-    .edit-form { border-top: 1px solid #ddd; margin-top: 0.75rem; padding-top: 0.75rem; }
-    .field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.5rem; }
-    label { font-size: 0.8rem; font-weight: 600; }
-    input, textarea { border: 1px solid #ccc; border-radius: 4px; padding: 0.4rem; font-size: 0.9rem; }
-    .required { color: #c00; }
-    .field-error { color: #c00; font-size: 0.75rem; }
-    .edit-actions { display: flex; gap: 0.5rem; }
-    button[type="submit"] { background: #0070f3; color: #fff; border: none; border-radius: 4px; padding: 0.4rem 1rem; cursor: pointer; }
-    .cancel-edit-btn { background: #eee; border: none; border-radius: 4px; padding: 0.4rem 1rem; cursor: pointer; }
-  `]
+  styleUrl: './todo-edit.component.scss'
 })
 export class TodoEditComponent implements OnInit {
   @Input({ required: true }) todo!: Todo;
   @Output() saved = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
 
-  private svc = inject(TodoService);
-  private fb = inject(FormBuilder);
+  private readonly svc = inject(TodoService);
+  private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
-  form = this.fb.group({
+  readonly saving = signal(false);
+  readonly serverError = signal<string | null>(null);
+
+  readonly form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(200)]],
     description: ['', Validators.maxLength(1000)]
   });
@@ -69,12 +69,19 @@ export class TodoEditComponent implements OnInit {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const { title, description } = this.form.getRawValue();
-    this.svc.updateTodo(this.todo.id, {
+    this.saving.set(true);
+    this.serverError.set(null);
+    this.svc.update(this.todo.id, {
       title: title!,
       description: description || undefined,
       completed: this.todo.completed
+    }).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.saving.set(false))
+    ).subscribe({
+      next: () => this.saved.emit(),
+      error: () => this.serverError.set('Failed to save changes.')
     });
-    this.saved.emit();
   }
 
   cancel(): void {

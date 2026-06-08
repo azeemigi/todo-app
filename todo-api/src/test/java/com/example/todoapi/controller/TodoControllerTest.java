@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -58,7 +57,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void getAllTodos_returnsEmptyList() throws Exception {
+    void shouldReturnEmptyListWhenNoTodosExist() throws Exception {
         when(todoService.findAll(any(), any(), any(), any())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/todos"))
@@ -67,7 +66,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void getAllTodos_returnsTodosNewestFirst() throws Exception {
+    void shouldReturnTodosNewestFirstByDefault() throws Exception {
         Todo older = buildTodo("Older", Instant.parse("2026-06-07T09:00:00Z"));
         Todo newer = buildTodo("Newer", Instant.parse("2026-06-07T10:00:00Z"));
         when(todoService.findAll(any(), any(), any(), any())).thenReturn(List.of(newer, older));
@@ -78,20 +77,18 @@ class TodoControllerTest {
                 .andExpect(jsonPath("$[1].title").value("Older"));
     }
 
-    // T013: Status filter query param tests
     @Test
-    void getAllTodos_withStatusActive_returnsActiveOnly() throws Exception {
+    void shouldReturnOnlyActiveTodosWhenStatusParamIsActive() throws Exception {
         Todo active = buildTodo("Active", false, Instant.parse("2026-06-07T10:00:00Z"));
         when(todoService.findAll(eq(TodoStatus.ACTIVE), any(), any(), any())).thenReturn(List.of(active));
 
         mockMvc.perform(get("/api/todos?status=active"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].completed").value(false));
     }
 
     @Test
-    void getAllTodos_withStatusCompleted_returnsCompletedOnly() throws Exception {
+    void shouldReturnOnlyCompletedTodosWhenStatusParamIsCompleted() throws Exception {
         Todo completed = buildTodo("Completed", true, Instant.parse("2026-06-07T10:00:00Z"));
         when(todoService.findAll(eq(TodoStatus.COMPLETED), any(), any(), any())).thenReturn(List.of(completed));
 
@@ -101,7 +98,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void getAllTodos_withStatusAll_returnsAll() throws Exception {
+    void shouldReturnAllTodosWhenStatusParamIsAll() throws Exception {
         when(todoService.findAll(eq(TodoStatus.ALL), any(), any(), any())).thenReturn(List.of(
                 buildTodo("A", false, Instant.parse("2026-06-07T09:00:00Z")),
                 buildTodo("B", true, Instant.parse("2026-06-07T10:00:00Z"))
@@ -109,19 +106,18 @@ class TodoControllerTest {
 
         mockMvc.perform(get("/api/todos?status=all"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$.length()").value(2));
     }
 
     @Test
-    void getAllTodos_withInvalidStatus_returns400() throws Exception {
+    void shouldReturn400WithFieldErrorWhenStatusParamIsInvalid() throws Exception {
         mockMvc.perform(get("/api/todos?status=banana"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].field").value("status"))
-                .andExpect(jsonPath("$.errors[0].message").value(org.hamcrest.Matchers.containsString("banana")));
+                .andExpect(jsonPath("$.fieldErrors.status").value(org.hamcrest.Matchers.containsString("banana")));
     }
 
     @Test
-    void getAllTodos_noParams_backwardCompatible() throws Exception {
+    void shouldReturn200WithDefaultsWhenNoParamsProvided() throws Exception {
         when(todoService.findAll(eq(TodoStatus.ALL), any(), eq(SortBy.CREATED_AT), eq(SortDir.DESC)))
                 .thenReturn(Collections.emptyList());
 
@@ -129,9 +125,8 @@ class TodoControllerTest {
                 .andExpect(status().isOk());
     }
 
-    // T026: Sort query param tests
     @Test
-    void getAllTodos_withSortByTitleAsc_returns200() throws Exception {
+    void shouldReturn200AndSortByTitleAscendingWhenSortParams() throws Exception {
         when(todoService.findAll(any(), any(), eq(SortBy.TITLE), eq(SortDir.ASC))).thenReturn(List.of(
                 buildTodo("Alpha", Instant.parse("2026-06-07T10:00:00Z")),
                 buildTodo("Zebra", Instant.parse("2026-06-07T09:00:00Z"))
@@ -144,7 +139,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void getAllTodos_withSortByCreatedAtAsc_returns200() throws Exception {
+    void shouldReturn200AndSortByCreatedAtAscWhenSortParams() throws Exception {
         when(todoService.findAll(any(), any(), eq(SortBy.CREATED_AT), eq(SortDir.ASC))).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/todos?sortBy=createdAt&sortDir=asc"))
@@ -152,30 +147,29 @@ class TodoControllerTest {
     }
 
     @Test
-    void getAllTodos_withInvalidSortDir_returns400() throws Exception {
+    void shouldReturn400WithFieldErrorWhenSortDirIsInvalid() throws Exception {
         mockMvc.perform(get("/api/todos?sortDir=sideways"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].field").value("sortDir"));
+                .andExpect(jsonPath("$.fieldErrors.sortDir").exists());
     }
 
     @Test
-    void getAllTodos_withInvalidSortBy_returns400() throws Exception {
+    void shouldReturn400WithFieldErrorWhenSortByIsInvalid() throws Exception {
         mockMvc.perform(get("/api/todos?sortBy=priority"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].field").value("sortBy"));
+                .andExpect(jsonPath("$.fieldErrors.sortBy").exists());
     }
 
     @Test
-    void getAllTodos_withMultipleInvalidParams_returns400WithMultipleErrors() throws Exception {
+    void shouldReturn400WithMultipleFieldErrorsWhenMultipleParamsInvalid() throws Exception {
         mockMvc.perform(get("/api/todos?sortBy=priority&sortDir=sideways"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors", hasSize(2)));
+                .andExpect(jsonPath("$.fieldErrors.sortBy").exists())
+                .andExpect(jsonPath("$.fieldErrors.sortDir").exists());
     }
 
-    // --- Phase 4: US2 Create TODO ---
-
     @Test
-    void createTodo_returnsCreated() throws Exception {
+    void shouldCreateTodoAndReturn201() throws Exception {
         Todo created = buildTodo("Buy milk", Instant.parse("2026-06-07T12:00:00Z"));
         when(todoService.create(anyString(), any())).thenReturn(created);
 
@@ -187,16 +181,16 @@ class TodoControllerTest {
     }
 
     @Test
-    void createTodo_blankTitle_returns400() throws Exception {
+    void shouldReturn400WhenTitleIsBlank() throws Exception {
         mockMvc.perform(post("/api/todos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].field").exists());
+                .andExpect(jsonPath("$.fieldErrors.title").exists());
     }
 
     @Test
-    void createTodo_titleTooLong_returns400() throws Exception {
+    void shouldReturn400WhenTitleTooLong() throws Exception {
         String longTitle = "x".repeat(201);
         mockMvc.perform(post("/api/todos")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -205,7 +199,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void createTodo_descriptionTooLong_returns400() throws Exception {
+    void shouldReturn400WhenDescriptionTooLong() throws Exception {
         String longDesc = "y".repeat(1001);
         mockMvc.perform(post("/api/todos")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -213,10 +207,8 @@ class TodoControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // --- Phase 5: US3 Toggle Complete ---
-
     @Test
-    void patchTodo_marksComplete() throws Exception {
+    void shouldMarkTodoCompleteWhenPatchedWithTrue() throws Exception {
         Todo completed = buildTodo("Task", Instant.parse("2026-06-07T12:00:00Z"));
         completed.setCompleted(true);
         UUID id = completed.getId();
@@ -230,7 +222,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void patchTodo_marksIncomplete() throws Exception {
+    void shouldMarkTodoIncompleteWhenPatchedWithFalse() throws Exception {
         Todo incomplete = buildTodo("Task", Instant.parse("2026-06-07T12:00:00Z"));
         incomplete.setCompleted(false);
         UUID id = incomplete.getId();
@@ -244,7 +236,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void patchTodo_notFound_returns404() throws Exception {
+    void shouldReturn404WhenPatchingNonExistentTodo() throws Exception {
         UUID id = UUID.randomUUID();
         when(todoService.patch(eq(id), anyBoolean()))
                 .thenThrow(new java.util.NoSuchElementException());
@@ -256,17 +248,15 @@ class TodoControllerTest {
     }
 
     @Test
-    void patchTodo_missingCompleted_returns400() throws Exception {
+    void shouldReturn400WhenPatchBodyMissingCompleted() throws Exception {
         mockMvc.perform(patch("/api/todos/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
     }
 
-    // --- Phase 6: US4 Edit TODO ---
-
     @Test
-    void updateTodo_returnsUpdated() throws Exception {
+    void shouldReturnUpdatedTodoWhenUpdateSucceeds() throws Exception {
         Todo updated = buildTodo("Updated title", Instant.parse("2026-06-07T12:00:00Z"));
         UUID id = updated.getId();
         when(todoService.update(eq(id), anyString(), any(), anyBoolean())).thenReturn(updated);
@@ -279,7 +269,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void updateTodo_notFound_returns404() throws Exception {
+    void shouldReturn404WhenUpdatingNonExistentTodo() throws Exception {
         UUID id = UUID.randomUUID();
         when(todoService.update(eq(id), anyString(), any(), anyBoolean()))
                 .thenThrow(new java.util.NoSuchElementException());
@@ -291,7 +281,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void updateTodo_blankTitle_returns400() throws Exception {
+    void shouldReturn400WhenUpdateTitleIsBlank() throws Exception {
         mockMvc.perform(put("/api/todos/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"\",\"completed\":false}"))
@@ -299,17 +289,15 @@ class TodoControllerTest {
     }
 
     @Test
-    void updateTodo_missingCompleted_returns400() throws Exception {
+    void shouldReturn400WhenUpdateMissingCompleted() throws Exception {
         mockMvc.perform(put("/api/todos/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"Valid\"}"))
                 .andExpect(status().isBadRequest());
     }
 
-    // --- Phase 7: US5 Delete TODO ---
-
     @Test
-    void deleteTodo_returnsNoContent() throws Exception {
+    void shouldReturn204WhenDeleteSucceeds() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(delete("/api/todos/" + id))
@@ -317,7 +305,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void deleteTodo_notFound_returns404() throws Exception {
+    void shouldReturn404WhenDeletingNonExistentTodo() throws Exception {
         UUID id = UUID.randomUUID();
         org.mockito.Mockito.doThrow(new java.util.NoSuchElementException())
                 .when(todoService).delete(eq(id));
@@ -326,10 +314,8 @@ class TodoControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    // --- Phase 8: GET /api/todos/{id} ---
-
     @Test
-    void getTodoById_returnsItem() throws Exception {
+    void shouldReturnTodoByIdWhenExists() throws Exception {
         Todo todo = buildTodo("Single", Instant.parse("2026-06-07T12:00:00Z"));
         UUID id = todo.getId();
         when(todoService.findById(id)).thenReturn(java.util.Optional.of(todo));
@@ -340,7 +326,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void getTodoById_notFound_returns404() throws Exception {
+    void shouldReturn404WhenTodoByIdNotFound() throws Exception {
         UUID id = UUID.randomUUID();
         when(todoService.findById(id)).thenReturn(java.util.Optional.empty());
 

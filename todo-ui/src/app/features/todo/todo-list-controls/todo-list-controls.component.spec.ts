@@ -15,8 +15,7 @@ describe('TodoListControlsComponent', () => {
     fixture.detectChanges();
   });
 
-  // T017: Status filter tests
-  it('renders All, Active, Completed buttons', () => {
+  it('should render All, Active, Completed buttons', () => {
     const buttons = fixture.nativeElement.querySelectorAll('[data-status]');
     const labels = Array.from(buttons).map((b: any) => b.getAttribute('data-status'));
     expect(labels).toContain('all');
@@ -24,31 +23,28 @@ describe('TodoListControlsComponent', () => {
     expect(labels).toContain('completed');
   });
 
-  it('clicking All button emits statusChange with "all"', () => {
+  it('should emit statusChange with "all" when All button clicked', () => {
     const spy = jasmine.createSpy('statusChange');
     component.statusChange.subscribe(spy);
-    const btn = fixture.nativeElement.querySelector('[data-status="all"]');
-    btn.click();
+    fixture.nativeElement.querySelector('[data-status="all"]').click();
     expect(spy).toHaveBeenCalledWith('all');
   });
 
-  it('clicking Active button emits statusChange with "active"', () => {
+  it('should emit statusChange with "active" when Active button clicked', () => {
     const spy = jasmine.createSpy('statusChange');
     component.statusChange.subscribe(spy);
-    const btn = fixture.nativeElement.querySelector('[data-status="active"]');
-    btn.click();
+    fixture.nativeElement.querySelector('[data-status="active"]').click();
     expect(spy).toHaveBeenCalledWith('active');
   });
 
-  it('clicking Completed button emits statusChange with "completed"', () => {
+  it('should emit statusChange with "completed" when Completed button clicked', () => {
     const spy = jasmine.createSpy('statusChange');
     component.statusChange.subscribe(spy);
-    const btn = fixture.nativeElement.querySelector('[data-status="completed"]');
-    btn.click();
+    fixture.nativeElement.querySelector('[data-status="completed"]').click();
     expect(spy).toHaveBeenCalledWith('completed');
   });
 
-  it('button matching currentStatus input has active class', () => {
+  it('should mark the button matching currentStatus as active', () => {
     fixture.componentRef.setInput('currentStatus', 'active');
     fixture.detectChanges();
     const activeBtn = fixture.nativeElement.querySelector('[data-status="active"]');
@@ -57,13 +53,11 @@ describe('TodoListControlsComponent', () => {
     expect(allBtn.classList.contains('active')).toBeFalse();
   });
 
-  // T022: Search input tests
-  it('renders a search input', () => {
-    const input = fixture.nativeElement.querySelector('input[type="text"]');
-    expect(input).toBeTruthy();
+  it('should render a search text input', () => {
+    expect(fixture.nativeElement.querySelector('input[type="text"]')).toBeTruthy();
   });
 
-  it('typing in search input emits searchChange with input value', () => {
+  it('should emit searchChange with the typed value when input event fires', () => {
     const spy = jasmine.createSpy('searchChange');
     component.searchChange.subscribe(spy);
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="text"]');
@@ -72,7 +66,7 @@ describe('TodoListControlsComponent', () => {
     expect(spy).toHaveBeenCalledWith('hello');
   });
 
-  it('clearing search input emits searchChange with empty string', () => {
+  it('should emit searchChange with empty string when input is cleared', () => {
     const spy = jasmine.createSpy('searchChange');
     component.searchChange.subscribe(spy);
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="text"]');
@@ -81,20 +75,18 @@ describe('TodoListControlsComponent', () => {
     expect(spy).toHaveBeenCalledWith('');
   });
 
-  it('search input reflects currentQ input', () => {
+  it('should reflect currentQ input in the search field value', () => {
     fixture.componentRef.setInput('currentQ', 'report');
     fixture.detectChanges();
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="text"]');
     expect(input.value).toBe('report');
   });
 
-  // T028: Sort selector tests
-  it('renders a sort select element', () => {
-    const select = fixture.nativeElement.querySelector('select[data-sort]');
-    expect(select).toBeTruthy();
+  it('should render a sort select element', () => {
+    expect(fixture.nativeElement.querySelector('select[data-sort]')).toBeTruthy();
   });
 
-  it('selecting Newest emits sortChange with {sortBy:createdAt, sortDir:desc}', () => {
+  it('should emit sortChange with {sortBy:createdAt, sortDir:desc} when Newest selected', () => {
     const spy = jasmine.createSpy('sortChange');
     component.sortChange.subscribe(spy);
     const select: HTMLSelectElement = fixture.nativeElement.querySelector('select[data-sort]');
@@ -103,7 +95,7 @@ describe('TodoListControlsComponent', () => {
     expect(spy).toHaveBeenCalledWith({ sortBy: 'createdAt', sortDir: 'desc' });
   });
 
-  it('selecting Oldest emits sortChange with {sortBy:createdAt, sortDir:asc}', () => {
+  it('should emit sortChange with {sortBy:createdAt, sortDir:asc} when Oldest selected', () => {
     const spy = jasmine.createSpy('sortChange');
     component.sortChange.subscribe(spy);
     const select: HTMLSelectElement = fixture.nativeElement.querySelector('select[data-sort]');
@@ -112,7 +104,7 @@ describe('TodoListControlsComponent', () => {
     expect(spy).toHaveBeenCalledWith({ sortBy: 'createdAt', sortDir: 'asc' });
   });
 
-  it('selecting Title A-Z emits sortChange with {sortBy:title, sortDir:asc}', () => {
+  it('should emit sortChange with {sortBy:title, sortDir:asc} when Title A-Z selected', () => {
     const spy = jasmine.createSpy('sortChange');
     component.sortChange.subscribe(spy);
     const select: HTMLSelectElement = fixture.nativeElement.querySelector('select[data-sort]');
@@ -121,7 +113,7 @@ describe('TodoListControlsComponent', () => {
     expect(spy).toHaveBeenCalledWith({ sortBy: 'title', sortDir: 'asc' });
   });
 
-  it('selecting Title Z-A emits sortChange with {sortBy:title, sortDir:desc}', () => {
+  it('should emit sortChange with {sortBy:title, sortDir:desc} when Title Z-A selected', () => {
     const spy = jasmine.createSpy('sortChange');
     component.sortChange.subscribe(spy);
     const select: HTMLSelectElement = fixture.nativeElement.querySelector('select[data-sort]');
@@ -130,7 +122,7 @@ describe('TodoListControlsComponent', () => {
     expect(spy).toHaveBeenCalledWith({ sortBy: 'title', sortDir: 'desc' });
   });
 
-  it('sort select reflects currentSortBy and currentSortDir inputs', () => {
+  it('should reflect currentSortBy and currentSortDir inputs in the select value', () => {
     fixture.componentRef.setInput('currentSortBy', 'title');
     fixture.componentRef.setInput('currentSortDir', 'asc');
     fixture.detectChanges();

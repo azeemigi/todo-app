@@ -1,17 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { of, throwError } from 'rxjs';
 import { TodoFormComponent } from './todo-form.component';
-import { TodoService } from '../../services/todo.service';
+import { TodoService } from '../../../core/services/todo.service';
+import { Todo } from '../../../core/models/todo.model';
+
+const mockTodo: Todo = {
+  id: '1',
+  title: 'Buy groceries',
+  description: null,
+  completed: false,
+  createdAt: '2026-06-07T10:00:00Z',
+  updatedAt: '2026-06-07T10:00:00Z'
+};
 
 describe('TodoFormComponent', () => {
   let fixture: ComponentFixture<TodoFormComponent>;
   let mockService: jasmine.SpyObj<TodoService>;
 
   beforeEach(async () => {
-    mockService = jasmine.createSpyObj('TodoService', ['createTodo'], {
-      error: signal<string | null>(null)
-    });
+    mockService = jasmine.createSpyObj('TodoService', ['create']);
+    mockService.create.and.returnValue(of(mockTodo));
 
     await TestBed.configureTestingModule({
       imports: [TodoFormComponent, ReactiveFormsModule],
@@ -26,35 +35,42 @@ describe('TodoFormComponent', () => {
   const descInput = () => fixture.nativeElement.querySelector('textarea[formControlName="description"]') as HTMLTextAreaElement;
   const submitBtn = () => fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
 
-  it('submit with valid title calls todoService.createTodo()', () => {
+  it('should call service create with correct dto when title is valid', () => {
     titleInput().value = 'Buy groceries';
     titleInput().dispatchEvent(new Event('input'));
     fixture.detectChanges();
     submitBtn().click();
-    expect(mockService.createTodo).toHaveBeenCalledWith(jasmine.objectContaining({ title: 'Buy groceries' }));
+    expect(mockService.create).toHaveBeenCalledWith(jasmine.objectContaining({ title: 'Buy groceries' }));
   });
 
-  it('empty title shows validation error without calling service', () => {
-    titleInput().value = '';
+  it('should emit created event after successful submission', () => {
+    let createdEmitted = false;
+    fixture.componentInstance.created.subscribe(() => { createdEmitted = true; });
+    titleInput().value = 'Buy groceries';
     titleInput().dispatchEvent(new Event('input'));
     fixture.detectChanges();
     submitBtn().click();
+    expect(createdEmitted).toBeTrue();
+  });
+
+  it('should show validation error and not call service when title is empty', () => {
+    submitBtn().click();
     fixture.detectChanges();
-    expect(mockService.createTodo).not.toHaveBeenCalled();
+    expect(mockService.create).not.toHaveBeenCalled();
     expect(fixture.nativeElement.querySelector('.field-error')).toBeTruthy();
   });
 
-  it('title >200 chars shows validation error', () => {
+  it('should show validation error and not call service when title exceeds 200 chars', () => {
     titleInput().value = 'x'.repeat(201);
     titleInput().dispatchEvent(new Event('input'));
     fixture.detectChanges();
     submitBtn().click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.field-error')).toBeTruthy();
-    expect(mockService.createTodo).not.toHaveBeenCalled();
+    expect(mockService.create).not.toHaveBeenCalled();
   });
 
-  it('description >1000 chars shows validation error', () => {
+  it('should show validation error and not call service when description exceeds 1000 chars', () => {
     titleInput().value = 'Valid title';
     descInput().value = 'y'.repeat(1001);
     titleInput().dispatchEvent(new Event('input'));
@@ -63,6 +79,16 @@ describe('TodoFormComponent', () => {
     submitBtn().click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.field-error')).toBeTruthy();
-    expect(mockService.createTodo).not.toHaveBeenCalled();
+    expect(mockService.create).not.toHaveBeenCalled();
+  });
+
+  it('should show server error message when create fails', () => {
+    mockService.create.and.returnValue(throwError(() => new Error('500')));
+    titleInput().value = 'Buy groceries';
+    titleInput().dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    submitBtn().click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.server-error')).toBeTruthy();
   });
 });

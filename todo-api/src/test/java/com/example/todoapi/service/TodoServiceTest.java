@@ -21,13 +21,13 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_returnsEmptyList_whenNoTodosExist() {
+    void shouldReturnEmptyListWhenNoTodosExist() {
         List<Todo> result = todoService.findAll(TodoStatus.ALL, null, SortBy.CREATED_AT, SortDir.DESC);
         assertThat(result).isEmpty();
     }
 
     @Test
-    void findAll_returnsNewestFirst() {
+    void shouldReturnTodosNewestFirstByDefault() {
         todoService.create("First", null);
         todoService.create("Second", null);
 
@@ -38,7 +38,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void create_persistsTodo() {
+    void shouldPersistCreatedTodo() {
         Todo created = todoService.create("Test title", "Test description");
 
         assertThat(created.getId()).isNotNull();
@@ -50,9 +50,8 @@ class TodoServiceTest {
         assertThat(todoService.findAll(TodoStatus.ALL, null, SortBy.CREATED_AT, SortDir.DESC)).hasSize(1);
     }
 
-    // T012: Status filtering
     @Test
-    void findAll_withStatusActive_returnsOnlyIncompleteTodos() {
+    void shouldReturnOnlyActiveTodosWhenStatusIsActive() {
         todoService.create("Active 1", null);
         Todo completed = todoService.create("Completed 1", null);
         todoService.patch(completed.getId(), true);
@@ -64,7 +63,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_withStatusCompleted_returnsOnlyCompletedTodos() {
+    void shouldReturnOnlyCompletedTodosWhenStatusIsCompleted() {
         todoService.create("Active 1", null);
         Todo completed = todoService.create("Completed 1", null);
         todoService.patch(completed.getId(), true);
@@ -76,7 +75,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_withStatusAll_returnsAllTodos() {
+    void shouldReturnAllTodosWhenStatusIsAll() {
         todoService.create("Active 1", null);
         Todo completed = todoService.create("Completed 1", null);
         todoService.patch(completed.getId(), true);
@@ -85,9 +84,8 @@ class TodoServiceTest {
         assertThat(result).hasSize(2);
     }
 
-    // T020: Text search
     @Test
-    void findAll_withQuery_matchesTitleCaseInsensitive() {
+    void shouldMatchTitleCaseInsensitivelyWhenQueryProvided() {
         todoService.create("Submit monthly report", "Finance team");
         todoService.create("Buy groceries", null);
 
@@ -97,7 +95,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_withQuery_matchesDescriptionCaseInsensitive() {
+    void shouldMatchDescriptionCaseInsensitivelyWhenQueryProvided() {
         todoService.create("Submit report", "Finance team deadline");
         todoService.create("Buy groceries", "Milk eggs");
 
@@ -107,7 +105,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_withBlankQuery_returnsAll() {
+    void shouldReturnAllTodosWhenQueryIsBlankOrNull() {
         todoService.create("First", null);
         todoService.create("Second", null);
 
@@ -117,16 +115,15 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_withQuery_noMatch_returnsEmpty() {
+    void shouldReturnEmptyListWhenQueryMatchesNoTodos() {
         todoService.create("Buy groceries", null);
 
         List<Todo> result = todoService.findAll(TodoStatus.ALL, "xyzzy", SortBy.CREATED_AT, SortDir.DESC);
         assertThat(result).isEmpty();
     }
 
-    // T025: Sort
     @Test
-    void findAll_sortByCreatedAtAsc_returnsOldestFirst() throws InterruptedException {
+    void shouldReturnOldestFirstWhenSortByCreatedAtAscending() throws InterruptedException {
         todoService.create("First", null);
         Thread.sleep(5);
         todoService.create("Second", null);
@@ -137,7 +134,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_sortByTitleAsc_returnsAlphabeticallyAscending() {
+    void shouldReturnAlphabeticallyAscendingWhenSortByTitleAscending() {
         todoService.create("Zebra task", null);
         todoService.create("Alpha task", null);
         todoService.create("Mango task", null);
@@ -149,7 +146,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_sortByTitleDesc_returnsAlphabeticallyDescending() {
+    void shouldReturnAlphabeticallyDescendingWhenSortByTitleDescending() {
         todoService.create("Alpha task", null);
         todoService.create("Zebra task", null);
         todoService.create("Mango task", null);
@@ -161,7 +158,7 @@ class TodoServiceTest {
     }
 
     @Test
-    void findAll_sortAppliesWithinFilteredSet() {
+    void shouldApplySortWithinFilteredSet() {
         todoService.create("Alpha active", null);
         Todo c = todoService.create("Mango completed", null);
         todoService.patch(c.getId(), true);

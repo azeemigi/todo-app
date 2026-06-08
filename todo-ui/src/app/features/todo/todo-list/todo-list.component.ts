@@ -1,8 +1,9 @@
-import { Component, inject, computed, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { TodoService } from '../../services/todo.service';
-import { TodoFilter } from '../../models/todo.model';
+import { finalize } from 'rxjs';
+import { Todo, TodoFilter } from '../../../core/models/todo.model';
+import { TodoService } from '../../../core/services/todo.service';
 import { TodoItemComponent } from '../todo-item/todo-item.component';
 import { TodoListControlsComponent } from '../todo-list-controls/todo-list-controls.component';
 
@@ -13,6 +14,7 @@ const VALID_SORT_DIR = ['asc', 'desc'];
 @Component({
   selector: 'app-todo-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TodoItemComponent, TodoListControlsComponent],
   template: `
     <app-todo-list-controls
@@ -24,16 +26,16 @@ const VALID_SORT_DIR = ['asc', 'desc'];
       (searchChange)="updateFilter({q: $event})"
       (sortChange)="updateFilter($event)"
     />
-    @if (svc.loading()) {
+    @if (loading()) {
       <div class="loading-spinner">
         <p>Loading TODOs...</p>
       </div>
-    } @else if (svc.error()) {
+    } @else if (error()) {
       <div class="error-message">
-        <p>{{ svc.error() }}</p>
+        <p>{{ error() }}</p>
         <button (click)="retry()">Retry</button>
       </div>
-    } @else if (svc.todos().length === 0) {
+    } @else if (todos().length === 0) {
       <div class="empty-state">
         @if (hasActiveFilter()) {
           <p class="no-results">No TODOs match your current filter. Try adjusting your search.</p>
@@ -43,27 +45,29 @@ const VALID_SORT_DIR = ['asc', 'desc'];
       </div>
     } @else {
       <div class="todo-list">
-        @for (todo of svc.todos(); track todo.id) {
-          <app-todo-item [todo]="todo" />
+        @for (todo of todos(); track todo.id) {
+          <app-todo-item [todo]="todo" (reloaded)="reload()" />
         }
       </div>
     }
   `,
-  styles: [`
-    .loading-spinner { text-align: center; padding: 2rem; color: #666; }
-    .error-message { padding: 1rem; background: #fee; border: 1px solid #fcc; border-radius: 4px; }
-    .error-message button { margin-top: 0.5rem; }
-    .empty-state { text-align: center; padding: 3rem; color: #888; }
-  `]
+  styleUrl: './todo-list.component.scss'
 })
 export class TodoListComponent {
-  protected svc = inject(TodoService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private readonly svc = inject(TodoService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private queryParams = toSignal(this.route.queryParamMap, {
+  private readonly queryParams = toSignal(this.route.queryParamMap, {
     initialValue: convertToParamMap({})
   });
+
+  private _requestGen = 0;
+
+  readonly todos = signal<Todo[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
 
   readonly status = computed(() => {
     const v = this.queryParams().get('status') ?? '';
@@ -88,13 +92,26 @@ export class TodoListComponent {
 
   constructor() {
     effect(() => {
-      this.svc.loadTodos({
+      this.loadTodos({
         status: this.status(),
         q: this.q(),
         sortBy: this.sortBy(),
         sortDir: this.sortDir()
       });
     });
+  }
+
+  reload(): void {
+    this.loadTodos({
+      status: this.status(),
+      q: this.q(),
+      sortBy: this.sortBy(),
+      sortDir: this.sortDir()
+    });
+  }
+
+  retry(): void {
+    this.reload();
   }
 
   updateFilter(changes: Partial<TodoFilter>): void {
@@ -104,12 +121,24 @@ export class TodoListComponent {
     });
   }
 
-  retry(): void {
-    this.svc.loadTodos({
-      status: this.status(),
-      q: this.q(),
-      sortBy: this.sortBy(),
-      sortDir: this.sortDir()
+  private loadTodos(filter: TodoFilter): void {
+    const gen = ++this._requestGen;
+    this.loading.set(true);
+    this.error.set(null);
+    this.svc.findAll(filter).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.loading.set(false))
+    ).subscribe({
+      next: todos => {
+        if (gen === this._requestGen) {
+          this.todos.set(todos);
+        }
+      },
+      error: () => {
+        if (gen === this._requestGen) {
+          this.error.set('Failed to load TODOs');
+        }
+      }
     });
   }
 }
