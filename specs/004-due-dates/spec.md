@@ -8,6 +8,13 @@
 
 **Input**: Add optional due dates to todos. Users can set a due date when creating or editing a todo. The todo list shows visual indicators for overdue and due-today todos. Users can filter the list to show only overdue todos or todos due within the next 7 days.
 
+## Clarifications
+
+### Session 2026-06-08
+
+- Q: Should "Due date" be added as a sort option alongside the existing createdAt/title sort? → A: Yes — add "Due date (soonest first)" and "Due date (latest first)" options. Todos without a due date sort to the bottom when a due-date sort is active.
+- Q: How should due dates be displayed on todo cards? → A: Absolute date format, e.g., "Jun 15" (current year omitted when same year, shown in full otherwise).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Set a Due Date on a Todo (Priority: P1)
@@ -79,11 +86,12 @@ Users can filter the todo list to show only todos that are overdue or due within
 - **FR-004**: Users MUST be able to clear a previously set due date by blanking the date field and saving.
 - **FR-005**: A todo card MUST display an "Overdue" indicator when its due date is before today and the todo is not completed.
 - **FR-006**: A todo card MUST display a "Due today" indicator when its due date equals today and the todo is not completed.
-- **FR-007**: A todo card MUST display the due date when it is set and in the future, with no urgency indicator.
+- **FR-007**: A todo card MUST display the due date in absolute format (e.g., "Jun 15"; include year when it differs from the current year) when it is set and in the future, with no urgency indicator.
 - **FR-008**: Completed todos MUST NOT display "Overdue" or "Due today" indicators regardless of their due date.
 - **FR-009**: The filter controls MUST include an "Overdue" option that shows only incomplete todos with a past due date.
 - **FR-010**: The filter controls MUST include a "Due this week" option that shows todos due between today and 7 days from today (inclusive), regardless of completion status.
 - **FR-011**: Due-date filter options MUST coexist with the existing status filter (all / active / completed) and search/sort controls.
+- **FR-012**: The sort controls MUST include "Due date (soonest first)" and "Due date (latest first)" options. Todos without a due date MUST sort to the bottom when either due-date sort option is active.
 
 ### Key Entities
 
