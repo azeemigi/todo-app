@@ -5,11 +5,11 @@ Read and follow AGENT.md for all agent behaviour, workflow, and coding standards
 <!-- SPECKIT START -->
 ## Active Feature
 
-**Branch**: `002-todo-filtering-search-sort`
-**Plan**: [specs/002-todo-filtering-search-sort/plan.md](specs/002-todo-filtering-search-sort/plan.md)
-**Spec**: [specs/002-todo-filtering-search-sort/spec.md](specs/002-todo-filtering-search-sort/spec.md)
-**Data Model**: [specs/002-todo-filtering-search-sort/data-model.md](specs/002-todo-filtering-search-sort/data-model.md)
-**API Contract**: [specs/002-todo-filtering-search-sort/contracts/todos-api.md](specs/002-todo-filtering-search-sort/contracts/todos-api.md)
+**Branch**: `004-due-dates`
+**Plan**: [specs/004-due-dates/plan.md](specs/004-due-dates/plan.md)
+**Spec**: [specs/004-due-dates/spec.md](specs/004-due-dates/spec.md)
+**Data Model**: [specs/004-due-dates/data-model.md](specs/004-due-dates/data-model.md)
+**API Contract**: [specs/004-due-dates/contracts/todos-api.md](specs/004-due-dates/contracts/todos-api.md)
 <!-- SPECKIT END -->
 
 ## Project overview
