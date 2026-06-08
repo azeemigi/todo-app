@@ -1,10 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, EventEmitter, inject, Output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { TodoService } from '../../services/todo.service';
+import { finalize } from 'rxjs';
+import { TodoService } from '../../../core/services/todo.service';
 
 @Component({
   selector: 'app-todo-form',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule],
   template: `
     <form [formGroup]="form" (ngSubmit)="submit()" class="todo-form">
@@ -30,38 +33,44 @@ import { TodoService } from '../../services/todo.service';
       @if (serverError()) {
         <p class="server-error">{{ serverError() }}</p>
       }
-      <button type="submit">Add TODO</button>
+      <button type="submit" [disabled]="submitting()">Add TODO</button>
     </form>
   `,
-  styles: [`
-    .todo-form { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; }
-    .field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; }
-    label { font-weight: 600; font-size: 0.875rem; }
-    input, textarea { border: 1px solid #ccc; border-radius: 4px; padding: 0.5rem; font-size: 0.9rem; }
-    .required { color: #c00; }
-    .field-error { color: #c00; font-size: 0.8rem; }
-    .server-error { color: #c00; }
-    button[type="submit"] { padding: 0.5rem 1.25rem; background: #0070f3; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-  `]
+  styleUrl: './todo-form.component.scss'
 })
 export class TodoFormComponent {
-  private svc = inject(TodoService);
-  private fb = inject(FormBuilder);
+  @Output() created = new EventEmitter<void>();
 
-  form = this.fb.group({
+  private readonly svc = inject(TodoService);
+  private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly submitting = signal(false);
+  readonly serverError = signal<string | null>(null);
+
+  readonly form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(200)]],
     description: ['', Validators.maxLength(1000)]
   });
 
   get titleCtrl() { return this.form.controls.title; }
   get descCtrl() { return this.form.controls.description; }
-  get serverError() { return this.svc.error; }
 
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const { title, description } = this.form.getRawValue();
-    this.svc.createTodo({ title: title!, description: description || undefined });
-    this.form.reset();
+    this.submitting.set(true);
+    this.serverError.set(null);
+    this.svc.create({ title: title!, description: description || undefined }).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.submitting.set(false))
+    ).subscribe({
+      next: () => {
+        this.form.reset();
+        this.created.emit();
+      },
+      error: () => this.serverError.set('Failed to create TODO.')
+    });
   }
 }

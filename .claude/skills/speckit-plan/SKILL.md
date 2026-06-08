@@ -60,6 +60,22 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 
+2a. **Load project coding-standard skills** (MANDATORY — read ALL of these before producing the plan):
+
+   The plan's file structure, source layout, and architecture decisions MUST conform to these standards. Read each skill file in full before filling in the Technical Context or Project Structure sections of the plan.
+
+   | Skill | Path | Governs |
+   |---|---|---|
+   | Java Coding Standards | `.claude/skills/java-coding-standards/SKILL.md` | Package layout, class naming, constructor injection, records |
+   | Angular Coding Standards | `.claude/skills/angular-coding-standards/SKILL.md` | Folder structure (`core/`, `features/`), component conventions, SCSS, OnPush |
+   | API Design | `.claude/skills/api-design/SKILL.md` | ErrorResponse record, endpoint contracts, DTO naming |
+   | Logging & Error Handling | `.claude/skills/logging-and-error-handling/SKILL.md` | SLF4J, log levels, Angular HTTP interceptor placement |
+   | Testing Standards | `.claude/skills/testing-standards/SKILL.md` | Test file placement, naming conventions, framework usage |
+   | Maven Build | `.claude/skills/maven-build/SKILL.md` | pom.xml structure, plugin config |
+   | Git Workflow | `.claude/skills/git-workflow/SKILL.md` | Branch naming, commit conventions |
+
+   The generated plan.md MUST reflect the folder structure, naming, and patterns defined in these skills. Any deviation requires an entry in the Complexity Tracking table with justification.
+
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
    - Fill Constitution Check section from constitution

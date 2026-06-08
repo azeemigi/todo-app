@@ -18,15 +18,16 @@ export interface UpdateTodoDto {
   completed: boolean;
 }
 
-export interface PatchTodoDto {
-  completed: boolean;
-}
-
-export interface FieldError {
-  field: string;
-  message: string;
-}
-
 export interface ApiError {
-  errors: FieldError[];
+  status: number;
+  message: string;
+  timestamp: string;
+  fieldErrors?: Record<string, string>;
+}
+
+export interface TodoFilter {
+  status?: string;
+  q?: string;
+  sortBy?: string;
+  sortDir?: string;
 }
