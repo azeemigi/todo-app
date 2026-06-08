@@ -20,7 +20,7 @@
 
 **Purpose**: Configuration change required before any `LocalDate` can serialize correctly.
 
-- [ ] T001 Add `spring.jackson.serialization.write-dates-as-timestamps=false` to `todo-api/src/main/resources/application.properties`
+- [X] T001 Add `spring.jackson.serialization.write-dates-as-timestamps=false` to `todo-api/src/main/resources/application.properties`
 
 ---
 
@@ -30,11 +30,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 [P] Create `todo-api/src/test/java/com/example/todoapi/dto/TodoResponseTest.java` — write failing tests `shouldMapDueDateToIsoStringWhenDueDateIsSet` and `shouldOmitDueDateWhenNull` (confirm tests FAIL before proceeding to T004–T005)
-- [ ] T003 [P] Update `todo-ui/src/app/core/models/todo.model.ts` — add `dueDate: string | null` to `Todo`; add `dueDate?: string` to `CreateTodoDto`; add `dueDate?: string | null` to `UpdateTodoDto`
-- [ ] T004 Add `private LocalDate dueDate` field with `getDueDate()` and `setDueDate(LocalDate)` getter/setter to `todo-api/src/main/java/com/example/todoapi/model/Todo.java`
-- [ ] T005 Update `todo-api/src/main/java/com/example/todoapi/dto/TodoResponse.java` — add `String dueDate` record component; update `from(Todo)` to call `todo.getDueDate() != null ? todo.getDueDate().toString() : null`
-- [ ] T006 Run `mvn test -pl todo-api -Dtest=TodoResponseTest` — confirm `TodoResponseTest` now passes (both mapping tests green)
+- [X] T002 [P] Create `todo-api/src/test/java/com/example/todoapi/dto/TodoResponseTest.java` — write failing tests `shouldMapDueDateToIsoStringWhenDueDateIsSet` and `shouldOmitDueDateWhenNull` (confirm tests FAIL before proceeding to T004–T005)
+- [X] T003 [P] Update `todo-ui/src/app/core/models/todo.model.ts` — add `dueDate: string | null` to `Todo`; add `dueDate?: string` to `CreateTodoDto`; add `dueDate?: string | null` to `UpdateTodoDto`
+- [X] T004 Add `private LocalDate dueDate` field with `getDueDate()` and `setDueDate(LocalDate)` getter/setter to `todo-api/src/main/java/com/example/todoapi/model/Todo.java`
+- [X] T005 Update `todo-api/src/main/java/com/example/todoapi/dto/TodoResponse.java` — add `String dueDate` record component; update `from(Todo)` to call `todo.getDueDate() != null ? todo.getDueDate().toString() : null`
+- [X] T006 Run `mvn test -pl todo-api -Dtest=TodoResponseTest` — confirm `TodoResponseTest` now passes (both mapping tests green)
 
 **Checkpoint**: `Todo` entity has `dueDate`; `TodoResponse` exposes it as ISO string; TypeScript interfaces updated. User story implementation can now begin.
 
@@ -50,23 +50,23 @@
 
 > **Write these tests FIRST — confirm they FAIL before any implementation below**
 
-- [ ] T007 [P] [US1] Add `shouldCreateTodoWithDueDateWhenProvided` and `shouldCreateTodoWithNullDueDateWhenNotProvided` to `todo-api/src/test/java/com/example/todoapi/service/TodoServiceTest.java` (use `Given/When/Then` structure; assert `todo.getDueDate()` equals the provided `LocalDate`)
-- [ ] T008 [P] [US1] Add `shouldReturn201WithDueDateInResponseWhenDueDateProvided`, `shouldUpdateDueDateWhenPutRequestIncludesDueDate`, and `shouldClearDueDateWhenPutRequestSendsNull` to `todo-api/src/test/java/com/example/todoapi/controller/TodoControllerTest.java` (use `@WebMvcTest`; assert `jsonPath("$.dueDate")`)
-- [ ] T009 [P] [US1] Add `shouldSubmitWithDueDateWhenDateIsEntered` and `shouldSubmitWithNullDueDateWhenDateFieldIsEmpty` to `todo-ui/src/app/features/todo/todo-form/todo-form.component.spec.ts` (spy on `TodoService.create`; assert call args include/omit `dueDate`)
-- [ ] T010 [P] [US1] Add `shouldPrePopulateDueDateFieldFromTodoInput` and `shouldClearDueDateWhenFieldIsEmptied` to `todo-ui/src/app/features/todo/todo-edit/todo-edit.component.spec.ts` (set `@Input() todo` with `dueDate`; assert form control value; spy on `TodoService.update`)
+- [X] T007 [P] [US1] Add `shouldCreateTodoWithDueDateWhenProvided` and `shouldCreateTodoWithNullDueDateWhenNotProvided` to `todo-api/src/test/java/com/example/todoapi/service/TodoServiceTest.java` (use `Given/When/Then` structure; assert `todo.getDueDate()` equals the provided `LocalDate`)
+- [X] T008 [P] [US1] Add `shouldReturn201WithDueDateInResponseWhenDueDateProvided`, `shouldUpdateDueDateWhenPutRequestIncludesDueDate`, and `shouldClearDueDateWhenPutRequestSendsNull` to `todo-api/src/test/java/com/example/todoapi/controller/TodoControllerTest.java` (use `@WebMvcTest`; assert `jsonPath("$.dueDate")`)
+- [X] T009 [P] [US1] Add `shouldSubmitWithDueDateWhenDateIsEntered` and `shouldSubmitWithNullDueDateWhenDateFieldIsEmpty` to `todo-ui/src/app/features/todo/todo-form/todo-form.component.spec.ts` (spy on `TodoService.create`; assert call args include/omit `dueDate`)
+- [X] T010 [P] [US1] Add `shouldPrePopulateDueDateFieldFromTodoInput` and `shouldClearDueDateWhenFieldIsEmptied` to `todo-ui/src/app/features/todo/todo-edit/todo-edit.component.spec.ts` (set `@Input() todo` with `dueDate`; assert form control value; spy on `TodoService.update`)
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Add `LocalDate dueDate` field to `todo-api/src/main/java/com/example/todoapi/dto/CreateTodoRequest.java` (no validation annotation — optional field)
-- [ ] T012 [P] [US1] Add `LocalDate dueDate` field to `todo-api/src/main/java/com/example/todoapi/dto/UpdateTodoRequest.java` (no validation annotation — optional, nullable to allow clearing)
-- [ ] T013 [US1] Update `TodoService.create()` and `TodoService.update()` in `todo-api/src/main/java/com/example/todoapi/service/TodoService.java` — accept `LocalDate dueDate` param; call `todo.setDueDate(dueDate)` in both methods; add `INFO` log for dueDate when non-null
-- [ ] T014 [US1] Update `TodoController.createTodo()` and `TodoController.updateTodo()` in `todo-api/src/main/java/com/example/todoapi/controller/TodoController.java` — pass `request.dueDate()` to the corresponding service method
-- [ ] T015 [US1] Update `TodoService.create()` and `TodoService.update()` in `todo-ui/src/app/core/services/todo.service.ts` — include `dueDate` in the request body (pass as-is; empty string maps to omit/null)
-- [ ] T016 [US1] Add `dueDate: ['', []]` `FormControl` to the `nonNullable.group` in `todo-ui/src/app/features/todo/todo-form/todo-form.component.ts`; include `dueDate: value.dueDate || undefined` in the `CreateTodoDto` emitted on submit (empty string → omit field)
-- [ ] T017 [US1] Update `todo-ui/src/app/features/todo/todo-form/todo-form.component.html` — add `<label>` + `<input type="date" formControlName="dueDate">` after the description field
-- [ ] T018 [US1] Update `todo-ui/src/app/features/todo/todo-form/todo-form.component.scss` — add `.due-date-field` style (consistent with other form fields)
-- [ ] T019 [US1] Add `dueDate: ['', []]` `FormControl` to the reactive form in `todo-ui/src/app/features/todo/todo-edit/todo-edit.component.ts`; pre-populate from `this.todo.dueDate ?? ''` in `ngOnInit`; include `dueDate: value.dueDate || null` in `UpdateTodoDto` on save (empty string → null to clear)
-- [ ] T020 [US1] Update `todo-ui/src/app/features/todo/todo-edit/todo-edit.component.html` — add `<label>` + `<input type="date" formControlName="dueDate">` after the description field
+- [X] T011 [P] [US1] Add `LocalDate dueDate` field to `todo-api/src/main/java/com/example/todoapi/dto/CreateTodoRequest.java` (no validation annotation — optional field)
+- [X] T012 [P] [US1] Add `LocalDate dueDate` field to `todo-api/src/main/java/com/example/todoapi/dto/UpdateTodoRequest.java` (no validation annotation — optional, nullable to allow clearing)
+- [X] T013 [US1] Update `TodoService.create()` and `TodoService.update()` in `todo-api/src/main/java/com/example/todoapi/service/TodoService.java` — accept `LocalDate dueDate` param; call `todo.setDueDate(dueDate)` in both methods; add `INFO` log for dueDate when non-null
+- [X] T014 [US1] Update `TodoController.createTodo()` and `TodoController.updateTodo()` in `todo-api/src/main/java/com/example/todoapi/controller/TodoController.java` — pass `request.dueDate()` to the corresponding service method
+- [X] T015 [US1] Update `TodoService.create()` and `TodoService.update()` in `todo-ui/src/app/core/services/todo.service.ts` — include `dueDate` in the request body (pass as-is; empty string maps to omit/null)
+- [X] T016 [US1] Add `dueDate: ['', []]` `FormControl` to the `nonNullable.group` in `todo-ui/src/app/features/todo/todo-form/todo-form.component.ts`; include `dueDate: value.dueDate || undefined` in the `CreateTodoDto` emitted on submit (empty string → omit field)
+- [X] T017 [US1] Update `todo-ui/src/app/features/todo/todo-form/todo-form.component.html` — add `<label>` + `<input type="date" formControlName="dueDate">` after the description field
+- [X] T018 [US1] Update `todo-ui/src/app/features/todo/todo-form/todo-form.component.scss` — add `.due-date-field` style (consistent with other form fields)
+- [X] T019 [US1] Add `dueDate: ['', []]` `FormControl` to the reactive form in `todo-ui/src/app/features/todo/todo-edit/todo-edit.component.ts`; pre-populate from `this.todo.dueDate ?? ''` in `ngOnInit`; include `dueDate: value.dueDate || null` in `UpdateTodoDto` on save (empty string → null to clear)
+- [X] T020 [US1] Update `todo-ui/src/app/features/todo/todo-edit/todo-edit.component.html` — add `<label>` + `<input type="date" formControlName="dueDate">` after the description field
 
 **Checkpoint**: `POST /api/todos` and `PUT /api/todos/{id}` accept and return `dueDate`. Create and edit forms include a date picker. Clearing the field sends `null`, removing the date. Run `mvn clean verify` — all tests must pass.
 
@@ -82,15 +82,15 @@
 
 > **Write these tests FIRST — confirm they FAIL before any implementation below**
 
-- [ ] T021 [P] [US2] Create `todo-ui/src/app/shared/pipes/due-date.pipe.spec.ts` — write `shouldFormatDateAsDayMonthWhenSameYear`, `shouldFormatDateWithYearWhenDifferentYear`, and `shouldReturnEmptyStringWhenInputIsNull` (use `TestBed`; instantiate `DueDatePipe` directly)
-- [ ] T022 [P] [US2] Add `shouldShowOverdueBadgeWhenDueDateBeforeTodayAndNotCompleted`, `shouldShowDueTodayBadgeWhenDueDateIsTodayAndNotCompleted`, `shouldShowFutureDateWithNoBadgeWhenDueDateIsAfterToday`, `shouldNotShowUrgencyBadgeWhenTodoIsCompleted`, and `shouldShowNoBadgeWhenNoDueDate` to `todo-ui/src/app/features/todo/todo-item/todo-item.component.spec.ts`
+- [X] T021 [P] [US2] Create `todo-ui/src/app/shared/pipes/due-date.pipe.spec.ts` — write `shouldFormatDateAsDayMonthWhenSameYear`, `shouldFormatDateWithYearWhenDifferentYear`, and `shouldReturnEmptyStringWhenInputIsNull` (use `TestBed`; instantiate `DueDatePipe` directly)
+- [X] T022 [P] [US2] Add `shouldShowOverdueBadgeWhenDueDateBeforeTodayAndNotCompleted`, `shouldShowDueTodayBadgeWhenDueDateIsTodayAndNotCompleted`, `shouldShowFutureDateWithNoBadgeWhenDueDateIsAfterToday`, `shouldNotShowUrgencyBadgeWhenTodoIsCompleted`, and `shouldShowNoBadgeWhenNoDueDate` to `todo-ui/src/app/features/todo/todo-item/todo-item.component.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T023 [US2] Create `todo-ui/src/app/shared/pipes/due-date.pipe.ts` — standalone `@Pipe({ name: 'dueDate', standalone: true, pure: true })` class `DueDatePipe implements PipeTransform`; `transform(value: string | null): string` — parse `"yyyy-MM-dd"` using `new Date(value + 'T00:00:00')`; format month as short name using `Intl.DateTimeFormat`; omit year when same as current year; return `''` for null
-- [ ] T024 [US2] Update `todo-ui/src/app/features/todo/todo-item/todo-item.component.ts` — add `private readonly today = new Date().toISOString().slice(0, 10)` class field; add `readonly dueStatus = computed(() => { ... })` signal returning `'overdue' | 'due-today' | 'future' | 'none'` (null dueDate → `'none'`; completed todo → `'none'`; dueDate < today → `'overdue'`; dueDate === today → `'due-today'`; otherwise → `'future'`); import `DueDatePipe` in component imports
-- [ ] T025 [US2] Update `todo-ui/src/app/features/todo/todo-item/todo-item.component.html` — add due date section below the title: `@if (dueStatus() !== 'none') { <span [class]="'due-badge due-' + dueStatus()"> @if (dueStatus() === 'overdue') { Overdue } @else if (dueStatus() === 'due-today') { Due today } @else { {{ todo.dueDate | dueDate }} } </span> }`
-- [ ] T026 [US2] Update `todo-ui/src/app/features/todo/todo-item/todo-item.component.scss` — add `.due-badge` base style (small pill/tag); `.due-overdue` (red background or red text); `.due-today` (amber/orange); `.due-future` (muted grey text, no background)
+- [X] T023 [US2] Create `todo-ui/src/app/shared/pipes/due-date.pipe.ts` — standalone `@Pipe({ name: 'dueDate', standalone: true, pure: true })` class `DueDatePipe implements PipeTransform`; `transform(value: string | null): string` — parse `"yyyy-MM-dd"` using `new Date(value + 'T00:00:00')`; format month as short name using `Intl.DateTimeFormat`; omit year when same as current year; return `''` for null
+- [X] T024 [US2] Update `todo-ui/src/app/features/todo/todo-item/todo-item.component.ts` — add `private readonly today = new Date().toISOString().slice(0, 10)` class field; add `readonly dueStatus = computed(() => { ... })` signal returning `'overdue' | 'due-today' | 'future' | 'none'` (null dueDate → `'none'`; completed todo → `'none'`; dueDate < today → `'overdue'`; dueDate === today → `'due-today'`; otherwise → `'future'`); import `DueDatePipe` in component imports
+- [X] T025 [US2] Update `todo-ui/src/app/features/todo/todo-item/todo-item.component.html` — add due date section below the title: `@if (dueStatus() !== 'none') { <span [class]="'due-badge due-' + dueStatus()"> @if (dueStatus() === 'overdue') { Overdue } @else if (dueStatus() === 'due-today') { Due today } @else { {{ todo.dueDate | dueDate }} } </span> }`
+- [X] T026 [US2] Update `todo-ui/src/app/features/todo/todo-item/todo-item.component.scss` — add `.due-badge` base style (small pill/tag); `.due-overdue` (red background or red text); `.due-today` (amber/orange); `.due-future` (muted grey text, no background)
 
 **Checkpoint**: Todo cards show correct indicators based on due date and completion status. Run `ng test --watch=false --browsers=ChromeHeadless` — all Angular tests must pass.
 
@@ -106,26 +106,26 @@
 
 > **Write these tests FIRST — confirm they FAIL before any implementation below**
 
-- [ ] T027 [P] [US3] Add `shouldReturnOnlyOverdueIncompleteTodosWhenDueFilterIsOverdue`, `shouldReturnTodosWithDueDateWithinSevenDaysWhenDueFilterIsDueThisWeek`, `shouldSortByDueDateAscendingWithNullsLastWhenSortByDueDate`, and `shouldSortByDueDateDescendingWithNullsLastWhenSortDirIsDesc` to `todo-api/src/test/java/com/example/todoapi/service/TodoServiceTest.java`
-- [ ] T028 [P] [US3] Add `shouldReturnFilteredTodosWhenDueFilterIsOverdue`, `shouldReturnFilteredTodosWhenDueFilterIsDueThisWeek`, and `shouldReturn400WhenDueFilterValueIsInvalid` to `todo-api/src/test/java/com/example/todoapi/controller/TodoControllerTest.java`
-- [ ] T029 [P] [US3] Add `shouldCallFindAllWithDueFilterWhenDueFilterParamPresentInUrl` and `shouldCallFindAllWithNoDueFilterWhenDueFilterParamAbsent` to `todo-ui/src/app/features/todo/todo-list/todo-list.component.spec.ts`
-- [ ] T030 [P] [US3] Add `shouldEmitDueFilterChangeWhenOverdueButtonClicked`, `shouldEmitDueFilterChangeWhenDueThisWeekButtonClicked`, and `shouldEmitSortChangeWithDueDateWhenDueDateOptionSelected` to `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.spec.ts`
+- [X] T027 [P] [US3] Add `shouldReturnOnlyOverdueIncompleteTodosWhenDueFilterIsOverdue`, `shouldReturnTodosWithDueDateWithinSevenDaysWhenDueFilterIsDueThisWeek`, `shouldSortByDueDateAscendingWithNullsLastWhenSortByDueDate`, and `shouldSortByDueDateDescendingWithNullsLastWhenSortDirIsDesc` to `todo-api/src/test/java/com/example/todoapi/service/TodoServiceTest.java`
+- [X] T028 [P] [US3] Add `shouldReturnFilteredTodosWhenDueFilterIsOverdue`, `shouldReturnFilteredTodosWhenDueFilterIsDueThisWeek`, and `shouldReturn400WhenDueFilterValueIsInvalid` to `todo-api/src/test/java/com/example/todoapi/controller/TodoControllerTest.java`
+- [X] T029 [P] [US3] Add `shouldCallFindAllWithDueFilterWhenDueFilterParamPresentInUrl` and `shouldCallFindAllWithNoDueFilterWhenDueFilterParamAbsent` to `todo-ui/src/app/features/todo/todo-list/todo-list.component.spec.ts`
+- [X] T030 [P] [US3] Add `shouldEmitDueFilterChangeWhenOverdueButtonClicked`, `shouldEmitDueFilterChangeWhenDueThisWeekButtonClicked`, and `shouldEmitSortChangeWithDueDateWhenDueDateOptionSelected` to `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.spec.ts`
 
 ### Implementation for User Story 3 (Backend)
 
-- [ ] T031 [P] [US3] Create `todo-api/src/main/java/com/example/todoapi/model/DueFilter.java` — enum with `OVERDUE("overdue")` and `DUE_THIS_WEEK("due-this-week")`; `@JsonValue` on `getValue()`; `toString()` returns value string (follow `SortBy.java` pattern exactly)
-- [ ] T032 [P] [US3] Add `DUE_DATE("dueDate")` constant to `todo-api/src/main/java/com/example/todoapi/model/SortBy.java` (follow existing `@JsonValue` + `toString()` pattern)
-- [ ] T033 [US3] Update `TodoService.findAll()` in `todo-api/src/main/java/com/example/todoapi/service/TodoService.java` — add `DueFilter dueFilter` parameter (nullable); add stream filter after status filter: `OVERDUE` → `t.getDueDate() != null && t.getDueDate().isBefore(LocalDate.now()) && !t.isCompleted()`; `DUE_THIS_WEEK` → `t.getDueDate() != null && !t.getDueDate().isBefore(LocalDate.now()) && !t.getDueDate().isAfter(LocalDate.now().plusDays(7))`; add `DUE_DATE` case to sort switch using `Comparator.comparing(Todo::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))`
-- [ ] T034 [US3] Update `TodoController.getAllTodos()` in `todo-api/src/main/java/com/example/todoapi/controller/TodoController.java` — add `@RequestParam(required = false) String dueFilter` parameter; parse using `parseEnum(DueFilter.class, "dueFilter", dueFilter, fieldErrors)` only when non-null; pass parsed `DueFilter` (or null) to `todoService.findAll()`
+- [X] T031 [P] [US3] Create `todo-api/src/main/java/com/example/todoapi/model/DueFilter.java` — enum with `OVERDUE("overdue")` and `DUE_THIS_WEEK("due-this-week")`; `@JsonValue` on `getValue()`; `toString()` returns value string (follow `SortBy.java` pattern exactly)
+- [X] T032 [P] [US3] Add `DUE_DATE("dueDate")` constant to `todo-api/src/main/java/com/example/todoapi/model/SortBy.java` (follow existing `@JsonValue` + `toString()` pattern)
+- [X] T033 [US3] Update `TodoService.findAll()` in `todo-api/src/main/java/com/example/todoapi/service/TodoService.java` — add `DueFilter dueFilter` parameter (nullable); add stream filter after status filter: `OVERDUE` → `t.getDueDate() != null && t.getDueDate().isBefore(LocalDate.now()) && !t.isCompleted()`; `DUE_THIS_WEEK` → `t.getDueDate() != null && !t.getDueDate().isBefore(LocalDate.now()) && !t.getDueDate().isAfter(LocalDate.now().plusDays(7))`; add `DUE_DATE` case to sort switch using `Comparator.comparing(Todo::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))`
+- [X] T034 [US3] Update `TodoController.getAllTodos()` in `todo-api/src/main/java/com/example/todoapi/controller/TodoController.java` — add `@RequestParam(required = false) String dueFilter` parameter; parse using `parseEnum(DueFilter.class, "dueFilter", dueFilter, fieldErrors)` only when non-null; pass parsed `DueFilter` (or null) to `todoService.findAll()`
 
 ### Implementation for User Story 3 (Frontend)
 
-- [ ] T035 [P] [US3] Add `dueFilter?: string` to `TodoFilter` in `todo-ui/src/app/core/models/todo.model.ts`
-- [ ] T036 [P] [US3] Update `TodoService.findAll()` in `todo-ui/src/app/core/services/todo.service.ts` — add `if (filter?.dueFilter) params = params.set('dueFilter', filter.dueFilter)` (follows existing pattern)
-- [ ] T037 [US3] Update `todo-ui/src/app/features/todo/todo-list/todo-list.component.ts` — add `VALID_DUE_FILTERS = ['overdue', 'due-this-week']` constant; add `readonly dueFilter = computed(() => { const v = this.queryParams().get('dueFilter') ?? ''; return VALID_DUE_FILTERS.includes(v) ? v : ''; })`; add `'dueDate'` to `VALID_SORT_BY`; include `dueFilter: this.dueFilter()` in every `loadTodos()` filter object; update `hasActiveFilter()` to also check `!!this.dueFilter()`; update inline template to pass `[currentDueFilter]="dueFilter()"` and `(dueFilterChange)="updateFilter({dueFilter: $event})"` to `<app-todo-list-controls>`
-- [ ] T038 [US3] Update `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.ts` — add `@Input() currentDueFilter = ''`; add `@Output() dueFilterChange = new EventEmitter<string>()` ; update `onSortChange()` to handle `'dueDate:asc'` and `'dueDate:desc'` values
-- [ ] T039 [US3] Update the inline template in `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.ts` — add due filter button group (`Overdue` emits `'overdue'`, `Due this week` emits `'due-this-week'`, `All` emits `''`); add `<option value="dueDate:asc">Due date (soonest first)</option>` and `<option value="dueDate:desc">Due date (latest first)</option>` to the sort `<select>`
-- [ ] T040 [US3] Update `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.scss` — add styles for due filter buttons (`.active` state matching status filter buttons)
+- [X] T035 [P] [US3] Add `dueFilter?: string` to `TodoFilter` in `todo-ui/src/app/core/models/todo.model.ts`
+- [X] T036 [P] [US3] Update `TodoService.findAll()` in `todo-ui/src/app/core/services/todo.service.ts` — add `if (filter?.dueFilter) params = params.set('dueFilter', filter.dueFilter)` (follows existing pattern)
+- [X] T037 [US3] Update `todo-ui/src/app/features/todo/todo-list/todo-list.component.ts` — add `VALID_DUE_FILTERS = ['overdue', 'due-this-week']` constant; add `readonly dueFilter = computed(() => { const v = this.queryParams().get('dueFilter') ?? ''; return VALID_DUE_FILTERS.includes(v) ? v : ''; })`; add `'dueDate'` to `VALID_SORT_BY`; include `dueFilter: this.dueFilter()` in every `loadTodos()` filter object; update `hasActiveFilter()` to also check `!!this.dueFilter()`; update inline template to pass `[currentDueFilter]="dueFilter()"` and `(dueFilterChange)="updateFilter({dueFilter: $event})"` to `<app-todo-list-controls>`
+- [X] T038 [US3] Update `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.ts` — add `@Input() currentDueFilter = ''`; add `@Output() dueFilterChange = new EventEmitter<string>()` ; update `onSortChange()` to handle `'dueDate:asc'` and `'dueDate:desc'` values
+- [X] T039 [US3] Update the inline template in `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.ts` — add due filter button group (`Overdue` emits `'overdue'`, `Due this week` emits `'due-this-week'`, `All` emits `''`); add `<option value="dueDate:asc">Due date (soonest first)</option>` and `<option value="dueDate:desc">Due date (latest first)</option>` to the sort `<select>`
+- [X] T040 [US3] Update `todo-ui/src/app/features/todo/todo-list-controls/todo-list-controls.component.scss` — add styles for due filter buttons (`.active` state matching status filter buttons)
 
 **Checkpoint**: `GET /api/todos?dueFilter=overdue` returns only incomplete past-due todos. `GET /api/todos?sortBy=dueDate&sortDir=asc` sorts todos by due date ascending with nulls at bottom. Filter buttons in the UI drive URL params and trigger API calls. Run `mvn clean verify` — all 3 stories integrated, all tests green.
 
@@ -133,8 +133,8 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T041 Run `mvn clean verify` from repo root — confirm all backend and frontend tests pass; fix any compilation errors before proceeding
-- [ ] T042 [P] Validate quickstart.md Scenarios 1–7 against the running application (`mvn spring-boot:run -pl todo-api`); curl each scenario and verify expected responses
+- [X] T041 Run `mvn clean verify` from repo root — confirm all backend and frontend tests pass; fix any compilation errors before proceeding
+- [X] T042 [P] Validate quickstart.md Scenarios 1–7 against the running application (`mvn spring-boot:run -pl todo-api`); curl each scenario and verify expected responses
 - [ ] T043 [P] Start Angular dev server (`cd todo-ui && ng serve --proxy-config proxy.conf.json`) and validate all 14 items in quickstart.md UI Validation Checklist manually
 
 ---

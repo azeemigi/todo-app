@@ -129,4 +129,31 @@ describe('TodoListControlsComponent', () => {
     const select: HTMLSelectElement = fixture.nativeElement.querySelector('select[data-sort]');
     expect(select.value).toBe('title:asc');
   });
+
+  // T030 — US3: dueFilter buttons and dueDate sort options
+
+  it('should emit dueFilterChange with "overdue" when Overdue button clicked', () => {
+    const spy = jasmine.createSpy('dueFilterChange');
+    component.dueFilterChange.subscribe(spy);
+    const btn = fixture.nativeElement.querySelector('[data-due-filter="overdue"]') as HTMLButtonElement;
+    btn.click();
+    expect(spy).toHaveBeenCalledWith('overdue');
+  });
+
+  it('should emit dueFilterChange with "due-this-week" when Due This Week button clicked', () => {
+    const spy = jasmine.createSpy('dueFilterChange');
+    component.dueFilterChange.subscribe(spy);
+    const btn = fixture.nativeElement.querySelector('[data-due-filter="due-this-week"]') as HTMLButtonElement;
+    btn.click();
+    expect(spy).toHaveBeenCalledWith('due-this-week');
+  });
+
+  it('should emit sortChange with dueDate:asc when Due date (soonest) is selected', () => {
+    const spy = jasmine.createSpy('sortChange');
+    component.sortChange.subscribe(spy);
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('select[data-sort]');
+    select.value = 'dueDate:asc';
+    select.dispatchEvent(new Event('change'));
+    expect(spy).toHaveBeenCalledWith({ sortBy: 'dueDate', sortDir: 'asc' });
+  });
 });

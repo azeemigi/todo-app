@@ -5,6 +5,7 @@ import com.example.todoapi.dto.PatchTodoRequest;
 import com.example.todoapi.dto.TodoResponse;
 import com.example.todoapi.dto.UpdateTodoRequest;
 import com.example.todoapi.exception.ErrorResponse;
+import com.example.todoapi.model.DueFilter;
 import com.example.todoapi.model.SortBy;
 import com.example.todoapi.model.SortDir;
 import com.example.todoapi.model.TodoStatus;
@@ -41,21 +42,25 @@ public class TodoController {
             @RequestParam(defaultValue = "all") String status,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String dueFilter) {
 
         Map<String, String> fieldErrors = new LinkedHashMap<>();
 
         TodoStatus statusEnum = parseEnum(TodoStatus.class, "status", status, fieldErrors);
         SortBy sortByEnum = parseEnum(SortBy.class, "sortBy", sortBy, fieldErrors);
         SortDir sortDirEnum = parseEnum(SortDir.class, "sortDir", sortDir, fieldErrors);
+        DueFilter dueFilterEnum = dueFilter != null
+                ? parseEnum(DueFilter.class, "dueFilter", dueFilter, fieldErrors)
+                : null;
 
         if (!fieldErrors.isEmpty()) {
             log.debug("Invalid filter params: {}", fieldErrors);
             return ResponseEntity.badRequest().body(ErrorResponse.ofValidation(fieldErrors));
         }
 
-        log.debug("Fetching todos: status={}, q='{}', sortBy={}, sortDir={}", status, q, sortBy, sortDir);
-        List<TodoResponse> result = todoService.findAll(statusEnum, q, sortByEnum, sortDirEnum).stream()
+        log.debug("Fetching todos: status={}, q='{}', sortBy={}, sortDir={}, dueFilter={}", status, q, sortBy, sortDir, dueFilter);
+        List<TodoResponse> result = todoService.findAll(statusEnum, q, sortByEnum, sortDirEnum, dueFilterEnum).stream()
                 .map(TodoResponse::from)
                 .toList();
         return ResponseEntity.ok(result);
@@ -79,7 +84,7 @@ public class TodoController {
     @ResponseStatus(HttpStatus.CREATED)
     public TodoResponse createTodo(@Valid @RequestBody CreateTodoRequest request) {
         log.info("Creating todo: title='{}'", request.title());
-        return TodoResponse.from(todoService.create(request.title(), request.description()));
+        return TodoResponse.from(todoService.create(request.title(), request.description(), request.dueDate()));
     }
 
     @GetMapping("/{id}")
@@ -94,7 +99,7 @@ public class TodoController {
     public TodoResponse updateTodo(@PathVariable UUID id, @Valid @RequestBody UpdateTodoRequest request) {
         log.info("Updating todo: id={}", id);
         return TodoResponse.from(
-                todoService.update(id, request.title(), request.description(), request.completed())
+                todoService.update(id, request.title(), request.description(), request.completed(), request.dueDate())
         );
     }
 

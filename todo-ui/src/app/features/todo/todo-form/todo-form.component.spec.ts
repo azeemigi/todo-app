@@ -11,7 +11,8 @@ const mockTodo: Todo = {
   description: null,
   completed: false,
   createdAt: '2026-06-07T10:00:00Z',
-  updatedAt: '2026-06-07T10:00:00Z'
+  updatedAt: '2026-06-07T10:00:00Z',
+  dueDate: null
 };
 
 describe('TodoFormComponent', () => {
@@ -33,6 +34,7 @@ describe('TodoFormComponent', () => {
 
   const titleInput = () => fixture.nativeElement.querySelector('input[formControlName="title"]') as HTMLInputElement;
   const descInput = () => fixture.nativeElement.querySelector('textarea[formControlName="description"]') as HTMLTextAreaElement;
+  const dueDateInput = () => fixture.nativeElement.querySelector('input[formControlName="dueDate"]') as HTMLInputElement;
   const submitBtn = () => fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
 
   it('should call service create with correct dto when title is valid', () => {
@@ -90,5 +92,26 @@ describe('TodoFormComponent', () => {
     submitBtn().click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.server-error')).toBeTruthy();
+  });
+
+  // T009 — US1: due date in create form
+
+  it('should submit with dueDate when date is entered', () => {
+    titleInput().value = 'Pay bill';
+    titleInput().dispatchEvent(new Event('input'));
+    dueDateInput().value = '2026-06-15';
+    dueDateInput().dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    submitBtn().click();
+    expect(mockService.create).toHaveBeenCalledWith(jasmine.objectContaining({ dueDate: '2026-06-15' }));
+  });
+
+  it('should submit without dueDate when date field is empty', () => {
+    titleInput().value = 'Pay bill';
+    titleInput().dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    submitBtn().click();
+    const callArg = mockService.create.calls.mostRecent().args[0];
+    expect(callArg['dueDate']).toBeUndefined();
   });
 });

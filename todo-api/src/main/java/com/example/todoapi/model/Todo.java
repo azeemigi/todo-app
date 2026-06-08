@@ -1,6 +1,7 @@
 package com.example.todoapi.model;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class Todo {
@@ -11,6 +12,7 @@ public class Todo {
     private boolean completed;
     private Instant createdAt;
     private Instant updatedAt;
+    private LocalDate dueDate;
 
     public Todo() {}
 
@@ -31,4 +33,7 @@ public class Todo {
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
 }

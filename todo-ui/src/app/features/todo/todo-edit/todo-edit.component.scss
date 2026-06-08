@@ -33,6 +33,10 @@ textarea {
   font-size: 0.75rem;
 }
 
+.due-date-field input {
+  max-width: 10rem;
+}
+
 .edit-actions {
   display: flex;
   gap: 0.5rem;

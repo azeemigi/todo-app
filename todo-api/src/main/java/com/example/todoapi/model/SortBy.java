@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum SortBy {
     CREATED_AT("createdAt"),
-    TITLE("title");
+    TITLE("title"),
+    DUE_DATE("dueDate");
 
     private final String value;
 

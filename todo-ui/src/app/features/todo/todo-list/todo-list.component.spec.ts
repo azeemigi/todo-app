@@ -11,7 +11,8 @@ const mockTodo: Todo = {
   description: null,
   completed: false,
   createdAt: '2026-06-07T10:00:00Z',
-  updatedAt: '2026-06-07T10:00:00Z'
+  updatedAt: '2026-06-07T10:00:00Z',
+  dueDate: null
 };
 
 describe('TodoListComponent — rendering', () => {
@@ -110,9 +111,9 @@ describe('TodoListComponent — URL sync', () => {
 
   it('should call findAll with all four filter params when all are present in URL', async () => {
     await setup({ status: 'active', q: 'report', sortBy: 'title', sortDir: 'asc' });
-    expect(mockService.findAll).toHaveBeenCalledWith({
-      status: 'active', q: 'report', sortBy: 'title', sortDir: 'asc'
-    });
+    expect(mockService.findAll).toHaveBeenCalledWith(
+      jasmine.objectContaining({ status: 'active', q: 'report', sortBy: 'title', sortDir: 'asc' })
+    );
   });
 
   it('should fall back to sortBy=createdAt when URL param sortBy is invalid', async () => {
@@ -185,5 +186,20 @@ describe('TodoListComponent — URL sync', () => {
     const calls = mockService.findAll.calls.allArgs();
     expect(calls.some((args: any[]) => args[0]?.status === 'completed' && args[0]?.q === 'world')).toBeTrue();
     expect(calls.every((args: any[]) => args[0]?.status !== 'active')).toBeTrue();
+  });
+
+  // T029 — US3: dueFilter URL sync
+
+  it('should call findAll with dueFilter when dueFilter param is present in URL', async () => {
+    await setup({ dueFilter: 'overdue' });
+    expect(mockService.findAll).toHaveBeenCalledWith(
+      jasmine.objectContaining({ dueFilter: 'overdue' })
+    );
+  });
+
+  it('should call findAll without dueFilter when dueFilter param is absent', async () => {
+    await setup({});
+    const lastCall = mockService.findAll.calls.mostRecent().args[0] as any;
+    expect(lastCall.dueFilter == null || lastCall.dueFilter === '').toBeTrue();
   });
 });

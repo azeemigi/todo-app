@@ -14,6 +14,7 @@ export class TodoService {
     if (filter?.q?.trim()) params = params.set('q', filter.q);
     if (filter?.sortBy) params = params.set('sortBy', filter.sortBy);
     if (filter?.sortDir) params = params.set('sortDir', filter.sortDir);
+    if (filter?.dueFilter) params = params.set('dueFilter', filter.dueFilter);
     return this.http.get<Todo[]>(this.API, { params });
   }
 

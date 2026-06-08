@@ -26,6 +26,26 @@
   }
 }
 
+.due-filter {
+  display: flex;
+  gap: 0.25rem;
+
+  button {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #fff;
+    font-size: 0.875rem;
+
+    &.active {
+      background: #c00;
+      color: #fff;
+      border-color: #c00;
+    }
+  }
+}
+
 input[type='text'] {
   flex: 1;
   min-width: 150px;

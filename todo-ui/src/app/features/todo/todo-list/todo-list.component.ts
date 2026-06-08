@@ -8,8 +8,9 @@ import { TodoItemComponent } from '../todo-item/todo-item.component';
 import { TodoListControlsComponent } from '../todo-list-controls/todo-list-controls.component';
 
 const VALID_STATUSES = ['all', 'active', 'completed'];
-const VALID_SORT_BY = ['createdAt', 'title'];
+const VALID_SORT_BY = ['createdAt', 'title', 'dueDate'];
 const VALID_SORT_DIR = ['asc', 'desc'];
+const VALID_DUE_FILTERS = ['overdue', 'due-this-week'];
 
 @Component({
   selector: 'app-todo-list',
@@ -22,9 +23,11 @@ const VALID_SORT_DIR = ['asc', 'desc'];
       [currentQ]="q()"
       [currentSortBy]="sortBy()"
       [currentSortDir]="sortDir()"
+      [currentDueFilter]="dueFilter()"
       (statusChange)="updateFilter({status: $event})"
       (searchChange)="updateFilter({q: $event})"
       (sortChange)="updateFilter($event)"
+      (dueFilterChange)="updateFilter({dueFilter: $event})"
     />
     @if (loading()) {
       <div class="loading-spinner">
@@ -86,8 +89,13 @@ export class TodoListComponent {
     return VALID_SORT_DIR.includes(v) ? v : 'desc';
   });
 
+  readonly dueFilter = computed(() => {
+    const v = this.queryParams().get('dueFilter') ?? '';
+    return VALID_DUE_FILTERS.includes(v) ? v : '';
+  });
+
   readonly hasActiveFilter = computed(() =>
-    this.status() !== 'all' || !!this.q() || this.sortBy() !== 'createdAt' || this.sortDir() !== 'desc'
+    this.status() !== 'all' || !!this.q() || this.sortBy() !== 'createdAt' || this.sortDir() !== 'desc' || !!this.dueFilter()
   );
 
   constructor() {
@@ -96,7 +104,8 @@ export class TodoListComponent {
         status: this.status(),
         q: this.q(),
         sortBy: this.sortBy(),
-        sortDir: this.sortDir()
+        sortDir: this.sortDir(),
+        dueFilter: this.dueFilter() || undefined
       });
     });
   }
@@ -106,7 +115,8 @@ export class TodoListComponent {
       status: this.status(),
       q: this.q(),
       sortBy: this.sortBy(),
-      sortDir: this.sortDir()
+      sortDir: this.sortDir(),
+      dueFilter: this.dueFilter() || undefined
     });
   }
 

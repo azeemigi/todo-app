@@ -30,6 +30,10 @@ import { TodoService } from '../../../core/services/todo.service';
           <span class="field-error">Description must be 1000 characters or fewer.</span>
         }
       </div>
+      <div class="field due-date-field">
+        <label for="edit-dueDate">Due Date</label>
+        <input id="edit-dueDate" type="date" formControlName="dueDate" />
+      </div>
       @if (serverError()) {
         <p class="field-error">{{ serverError() }}</p>
       }
@@ -55,26 +59,32 @@ export class TodoEditComponent implements OnInit {
 
   readonly form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(200)]],
-    description: ['', Validators.maxLength(1000)]
+    description: ['', Validators.maxLength(1000)],
+    dueDate: ['']
   });
 
   get titleCtrl() { return this.form.controls.title; }
   get descCtrl() { return this.form.controls.description; }
 
   ngOnInit(): void {
-    this.form.patchValue({ title: this.todo.title, description: this.todo.description ?? '' });
+    this.form.patchValue({
+      title: this.todo.title,
+      description: this.todo.description ?? '',
+      dueDate: this.todo.dueDate ?? ''
+    });
   }
 
   save(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
-    const { title, description } = this.form.getRawValue();
+    const { title, description, dueDate } = this.form.getRawValue();
     this.saving.set(true);
     this.serverError.set(null);
     this.svc.update(this.todo.id, {
       title: title!,
       description: description || undefined,
-      completed: this.todo.completed
+      completed: this.todo.completed,
+      dueDate: dueDate || null
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.saving.set(false))

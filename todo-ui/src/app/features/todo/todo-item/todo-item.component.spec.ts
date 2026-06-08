@@ -10,7 +10,8 @@ const baseTodo: Todo = {
   description: 'A description',
   completed: false,
   createdAt: '2026-06-07T10:00:00Z',
-  updatedAt: '2026-06-07T10:00:00Z'
+  updatedAt: '2026-06-07T10:00:00Z',
+  dueDate: null
 };
 
 describe('TodoItemComponent', () => {
@@ -110,5 +111,34 @@ describe('TodoItemComponent', () => {
     fixture.nativeElement.querySelector('.confirm-delete-btn').click();
     expect(mockService.delete).toHaveBeenCalledWith('1');
     expect(reloaded).toBeTrue();
+  });
+
+  // T022 — US2: dueStatus computed signal
+
+  it('should have dueStatus of "none" when dueDate is null', () => {
+    setup({ ...baseTodo, dueDate: null });
+    expect(fixture.componentInstance.dueStatus()).toBe('none');
+  });
+
+  it('should have dueStatus of "future" for a date in the future', () => {
+    setup({ ...baseTodo, dueDate: '2099-12-31' });
+    expect(fixture.componentInstance.dueStatus()).toBe('future');
+  });
+
+  it('should have dueStatus of "overdue" for a past date when incomplete', () => {
+    setup({ ...baseTodo, dueDate: '2020-01-01', completed: false });
+    expect(fixture.componentInstance.dueStatus()).toBe('overdue');
+  });
+
+  it('should have dueStatus of "none" for a past date when completed', () => {
+    setup({ ...baseTodo, dueDate: '2020-01-01', completed: true });
+    expect(fixture.componentInstance.dueStatus()).toBe('none');
+  });
+
+  it('should show overdue badge when dueStatus is overdue', () => {
+    setup({ ...baseTodo, dueDate: '2020-01-01', completed: false });
+    fixture.detectChanges();
+    const badge = fixture.nativeElement.querySelector('.due-badge.due-overdue');
+    expect(badge).toBeTruthy();
   });
 });

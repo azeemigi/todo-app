@@ -11,7 +11,8 @@ const testTodo: Todo = {
   description: 'Original desc',
   completed: false,
   createdAt: '2026-06-07T10:00:00Z',
-  updatedAt: '2026-06-07T10:00:00Z'
+  updatedAt: '2026-06-07T10:00:00Z',
+  dueDate: null
 };
 
 describe('TodoEditComponent', () => {
@@ -33,6 +34,7 @@ describe('TodoEditComponent', () => {
   });
 
   const titleInput = () => fixture.nativeElement.querySelector('input[formControlName="title"]') as HTMLInputElement;
+  const dueDateInput = () => fixture.nativeElement.querySelector('input[formControlName="dueDate"]') as HTMLInputElement;
   const saveBtn = () => fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
   const cancelBtn = () => fixture.nativeElement.querySelector('.cancel-edit-btn') as HTMLButtonElement;
 
@@ -71,5 +73,24 @@ describe('TodoEditComponent', () => {
     saveBtn().click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.field-error')).toBeTruthy();
+  });
+
+  // T010 — US1: due date pre-population and clearing in edit form
+
+  it('should pre-populate due date field from todo input when dueDate is set', async () => {
+    const todoWithDate: Todo = { ...testTodo, dueDate: '2026-06-15' };
+    fixture.componentInstance.todo = todoWithDate;
+    fixture.componentInstance.ngOnInit();
+    fixture.detectChanges();
+    expect(dueDateInput().value).toBe('2026-06-15');
+  });
+
+  it('should send null dueDate when due date field is cleared', () => {
+    dueDateInput().value = '';
+    dueDateInput().dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    saveBtn().click();
+    const callArg = mockService.update.calls.mostRecent().args[1];
+    expect(callArg['dueDate']).toBeNull();
   });
 });

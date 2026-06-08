@@ -27,6 +27,21 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
         </button>
       </div>
 
+      <div class="due-filter">
+        <button
+          data-due-filter="overdue"
+          [class.active]="currentDueFilter === 'overdue'"
+          (click)="dueFilterChange.emit(currentDueFilter === 'overdue' ? '' : 'overdue')">
+          Overdue
+        </button>
+        <button
+          data-due-filter="due-this-week"
+          [class.active]="currentDueFilter === 'due-this-week'"
+          (click)="dueFilterChange.emit(currentDueFilter === 'due-this-week' ? '' : 'due-this-week')">
+          Due this week
+        </button>
+      </div>
+
       <input
         type="text"
         placeholder="Search todos..."
@@ -42,6 +57,8 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
         <option value="createdAt:asc">Oldest</option>
         <option value="title:asc">Title A-Z</option>
         <option value="title:desc">Title Z-A</option>
+        <option value="dueDate:asc">Due date (soonest first)</option>
+        <option value="dueDate:desc">Due date (latest first)</option>
       </select>
     </div>
   `,
@@ -52,10 +69,12 @@ export class TodoListControlsComponent {
   @Input() currentQ = '';
   @Input() currentSortBy = 'createdAt';
   @Input() currentSortDir = 'desc';
+  @Input() currentDueFilter = '';
 
   @Output() statusChange = new EventEmitter<string>();
   @Output() searchChange = new EventEmitter<string>();
   @Output() sortChange = new EventEmitter<{ sortBy: string; sortDir: string }>();
+  @Output() dueFilterChange = new EventEmitter<string>();
 
   onSortChange(value: string): void {
     const [sortBy, sortDir] = value.split(':');

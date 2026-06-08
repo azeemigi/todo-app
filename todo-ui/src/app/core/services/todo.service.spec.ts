@@ -10,7 +10,8 @@ const mockTodo: Todo = {
   description: null,
   completed: false,
   createdAt: '2026-06-07T10:00:00Z',
-  updatedAt: '2026-06-07T10:00:00Z'
+  updatedAt: '2026-06-07T10:00:00Z',
+  dueDate: null
 };
 
 describe('TodoService', () => {

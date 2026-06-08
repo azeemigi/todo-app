@@ -8,7 +8,8 @@ public record TodoResponse(
         String description,
         boolean completed,
         String createdAt,
-        String updatedAt
+        String updatedAt,
+        String dueDate
 ) {
     public static TodoResponse from(Todo todo) {
         return new TodoResponse(
@@ -17,7 +18,8 @@ public record TodoResponse(
                 todo.getDescription(),
                 todo.isCompleted(),
                 todo.getCreatedAt().toString(),
-                todo.getUpdatedAt().toString()
+                todo.getUpdatedAt().toString(),
+                todo.getDueDate() != null ? todo.getDueDate().toString() : null
         );
     }
 }

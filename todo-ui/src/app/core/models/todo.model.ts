@@ -5,17 +5,20 @@ export interface Todo {
   completed: boolean;
   createdAt: string;
   updatedAt: string;
+  dueDate: string | null;
 }
 
 export interface CreateTodoDto {
   title: string;
   description?: string;
+  dueDate?: string;
 }
 
 export interface UpdateTodoDto {
   title: string;
   description?: string;
   completed: boolean;
+  dueDate?: string | null;
 }
 
 export interface ApiError {
@@ -30,4 +33,5 @@ export interface TodoFilter {
   q?: string;
   sortBy?: string;
   sortDir?: string;
+  dueFilter?: string;
 }

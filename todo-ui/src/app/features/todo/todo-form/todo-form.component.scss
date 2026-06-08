@@ -38,6 +38,10 @@ textarea {
   color: #c00;
 }
 
+.due-date-field input {
+  max-width: 12rem;
+}
+
 button[type='submit'] {
   padding: 0.5rem 1.25rem;
   background: #0070f3;

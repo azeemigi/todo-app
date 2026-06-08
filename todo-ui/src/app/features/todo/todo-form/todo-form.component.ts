@@ -30,6 +30,10 @@ import { TodoService } from '../../../core/services/todo.service';
           <span class="field-error">Description must be 1000 characters or fewer.</span>
         }
       </div>
+      <div class="field due-date-field">
+        <label for="dueDate">Due Date</label>
+        <input id="dueDate" type="date" formControlName="dueDate" />
+      </div>
       @if (serverError()) {
         <p class="server-error">{{ serverError() }}</p>
       }
@@ -50,7 +54,8 @@ export class TodoFormComponent {
 
   readonly form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(200)]],
-    description: ['', Validators.maxLength(1000)]
+    description: ['', Validators.maxLength(1000)],
+    dueDate: ['']
   });
 
   get titleCtrl() { return this.form.controls.title; }
@@ -59,10 +64,10 @@ export class TodoFormComponent {
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
-    const { title, description } = this.form.getRawValue();
+    const { title, description, dueDate } = this.form.getRawValue();
     this.submitting.set(true);
     this.serverError.set(null);
-    this.svc.create({ title: title!, description: description || undefined }).pipe(
+    this.svc.create({ title: title!, description: description || undefined, dueDate: dueDate || undefined }).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.submitting.set(false))
     ).subscribe({
