@@ -5,11 +5,11 @@ Read and follow AGENT.md for all agent behaviour, workflow, and coding standards
 <!-- SPECKIT START -->
 ## Active Feature
 
-**Branch**: `001-todo-rest-spa`
-**Plan**: [specs/001-todo-rest-spa/plan.md](specs/001-todo-rest-spa/plan.md)
-**Spec**: [specs/001-todo-rest-spa/spec.md](specs/001-todo-rest-spa/spec.md)
-**Data Model**: [specs/001-todo-rest-spa/data-model.md](specs/001-todo-rest-spa/data-model.md)
-**API Contract**: [specs/001-todo-rest-spa/contracts/todos-api.md](specs/001-todo-rest-spa/contracts/todos-api.md)
+**Branch**: `002-todo-filtering-search-sort`
+**Plan**: [specs/002-todo-filtering-search-sort/plan.md](specs/002-todo-filtering-search-sort/plan.md)
+**Spec**: [specs/002-todo-filtering-search-sort/spec.md](specs/002-todo-filtering-search-sort/spec.md)
+**Data Model**: [specs/002-todo-filtering-search-sort/data-model.md](specs/002-todo-filtering-search-sort/data-model.md)
+**API Contract**: [specs/002-todo-filtering-search-sort/contracts/todos-api.md](specs/002-todo-filtering-search-sort/contracts/todos-api.md)
 <!-- SPECKIT END -->
 
 ## Project overview
