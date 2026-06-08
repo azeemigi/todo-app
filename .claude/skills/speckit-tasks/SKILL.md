@@ -64,6 +64,22 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Load `.specify/memory/constitution.md` for project principles and governance constraints
    - Note: Not all projects have all documents. Generate tasks based on what's available.
 
+2a. **Load project coding-standard skills** (MANDATORY — read ALL of these before generating any tasks):
+
+   Task descriptions and file paths MUST reflect the project's coding standards. Read each skill file in full so that generated tasks reference the correct folder structure, naming conventions, and implementation patterns.
+
+   | Skill | Path | Governs |
+   |---|---|---|
+   | Java Coding Standards | `.claude/skills/java-coding-standards/SKILL.md` | Package layout, naming, records, switch expressions, test method names |
+   | Angular Coding Standards | `.claude/skills/angular-coding-standards/SKILL.md` | Folder structure (`core/`, `features/`), OnPush, Observable patterns, SCSS, inject() |
+   | API Design | `.claude/skills/api-design/SKILL.md` | ErrorResponse shape, endpoint naming, DTO conventions |
+   | Logging & Error Handling | `.claude/skills/logging-and-error-handling/SKILL.md` | SLF4J setup, log levels, Angular HTTP interceptor |
+   | Testing Standards | `.claude/skills/testing-standards/SKILL.md` | Test file locations, naming conventions, mock patterns |
+   | Maven Build | `.claude/skills/maven-build/SKILL.md` | pom.xml structure, plugin config, build lifecycle |
+   | Git Workflow | `.claude/skills/git-workflow/SKILL.md` | Branch names, commit message format |
+
+   Use these standards when writing task descriptions and file paths. A task that names the wrong folder (e.g. `components/` instead of `features/todo/`) or omits a required file (e.g. SCSS alongside TS) is invalid.
+
 3. **Execute task generation workflow**:
    - Load plan.md and extract tech stack, libraries, project structure
    - Load spec.md and extract user stories with their priorities (P1, P2, P3, etc.)

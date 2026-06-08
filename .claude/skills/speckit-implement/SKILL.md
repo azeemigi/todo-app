@@ -98,6 +98,22 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read .specify/memory/constitution.md for governance constraints
    - **IF EXISTS**: Read quickstart.md for integration scenarios
 
+3a. **Load project coding-standard skills** (MANDATORY — read ALL of these before writing any code):
+
+   These skill files are the project's authoritative implementation standards. Read each one in full now. They take precedence over any generic defaults.
+
+   | Skill | Path | Apply when |
+   |---|---|---|
+   | Java Coding Standards | `.claude/skills/java-coding-standards/SKILL.md` | Any Java file |
+   | Angular Coding Standards | `.claude/skills/angular-coding-standards/SKILL.md` | Any TypeScript / HTML / SCSS file |
+   | API Design | `.claude/skills/api-design/SKILL.md` | Any REST endpoint or DTO |
+   | Logging & Error Handling | `.claude/skills/logging-and-error-handling/SKILL.md` | Any error handling, logging, or HTTP interceptor |
+   | Testing Standards | `.claude/skills/testing-standards/SKILL.md` | Any test file (backend or frontend) |
+   | Maven Build | `.claude/skills/maven-build/SKILL.md` | Any pom.xml or build config |
+   | Git Workflow | `.claude/skills/git-workflow/SKILL.md` | Any commit or branch operation |
+
+   **Compliance gate**: Before marking each task `[X]`, verify it satisfies every applicable skill above. Do NOT mark a task complete if a skill violation is present.
+
 4. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
 
